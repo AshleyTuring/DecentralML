@@ -2,7 +2,7 @@ This example Federated Learning Pallet defines a data structure for a machine le
 
 This is a simplified example, and real-world Federated Learning Pallets can be much more complex and sophisticated. However, this example illustrates how Rust and IPFS can be used to create a Federated Learning Pallet that enables multiple participants to collaborate in training a machine learning model while preserving the privacy of their data. The Pallet leverages the decentralized and secure nature of IPFS to store the trained models while using the Polkadot Runtime Environment to provide a secure and efficient platform for running smart contracts.
 
-
+ 
 
 // Import necessary Rust and Polkadot libraries
 use frame_support::{decl_module, decl_storage, decl_event, dispatch, ensure};
