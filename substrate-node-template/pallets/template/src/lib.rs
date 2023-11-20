@@ -49,8 +49,36 @@ pub mod pallet {
 		type MinContribution: Get<BalanceOf<Self>>;
 	}
 
+	pub type FundIndex = u32;
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+	type FundInfoOf<T> = FundInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>;
+
+	#[derive(Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct FundInfo<AccountId, Balance, BlockNumber> {
+		/// The account that will recieve the funds if the campaign is successful
+		beneficiary: AccountId,
+		/// The amount of deposit placed
+		deposit: Balance,
+		/// The total amount raised
+		raised: Balance,
+		/// Block number after which funding must have succeeded
+		end: BlockNumber,
+		/// Upper bound on `raised`
+		goal: Balance,
+	}
+
+	#[pallet::storage]
+	#[pallet::getter(fn funds)]
+	/// Info on all of the funds.
+	pub(super) type Funds<T: Config> = StorageMap
+	<	_, 
+		Blake2_128Concat, 
+		FundIndex, 
+		FundInfoOf<T>,
+		OptionQuery,
+	>;
 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
