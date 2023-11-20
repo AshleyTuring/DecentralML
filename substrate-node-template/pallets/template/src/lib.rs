@@ -38,7 +38,19 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		/// The currency in which the crowdfunds will be denominated
+		type Currency: ReservableCurrency<Self::AccountId>;
+
+		// The amount to be held on deposit by the owner of a crowdfund
+		// type SubmissionDeposit: Get<BalanceOf<Self>>;
+
+		/// The minimum amount that may be contributed into a crowdfund. Should almost certainly be at
+		/// least ExistentialDeposit.
+		type MinContribution: Get<BalanceOf<Self>>;
 	}
+
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/

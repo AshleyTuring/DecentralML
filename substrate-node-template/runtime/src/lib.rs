@@ -163,6 +163,7 @@ impl frame_system::Config for Runtime {
 	type BlockLength = BlockLength;
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
+
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
@@ -268,10 +269,16 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-/// Configure the pallet-template in pallets/template.
+const MIN_CONTRIBUTION_VALUE: u128 = 1_000; // Replace with the desired value
+
+
+// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
+	type Currency = Balances;
+    type MinContribution =  frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
+	
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -288,6 +295,7 @@ construct_runtime!(
 		TemplateModule: pallet_template,
 	}
 );
+
 
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
