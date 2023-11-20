@@ -80,6 +80,11 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn fund_count)]
+	/// The total number of funds that have so far been allocated.
+	pub(super) type FundCount<T: Config> = StorageValue<_, FundIndex, ValueQuery>;
+
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
 	#[pallet::storage]
@@ -96,6 +101,12 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored { something: u32, who: T::AccountId },
+		Created(FundIndex, BlockNumberFor<T>),
+		Contributed(<T as frame_system::Config>::AccountId, FundIndex, BalanceOf<T>, BlockNumberFor<T>),
+		Withdrew(<T as frame_system::Config>::AccountId, FundIndex, BalanceOf<T>, BlockNumberFor<T>),
+		Retiring(FundIndex, BlockNumberFor<T>),
+		Dissolved(FundIndex, BlockNumberFor<T>, <T as frame_system::Config>::AccountId),
+		Dispensed(FundIndex, BlockNumberFor<T>, <T as frame_system::Config>::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
