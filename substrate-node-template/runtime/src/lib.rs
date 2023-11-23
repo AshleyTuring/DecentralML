@@ -278,6 +278,7 @@ impl pallet_template::Config for Runtime {
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
     type MinContribution =  frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
+	type SubmissionDeposit = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
 	
 }
 

@@ -22,8 +22,13 @@ pub mod pallet {
 	use super::*;
 
 	use frame_support::{pallet_prelude::*, storage::child,
-		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
+		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons}, 
+		sp_runtime::{traits::{Zero, AccountIdConversion}},
 	};
+
+	use frame_support::PalletId;
+
+	const PALLET_ID: PalletId = PalletId(*b"decentml");
 
 	use frame_system::{pallet_prelude::*, ensure_signed};
 
@@ -34,12 +39,21 @@ pub mod pallet {
 	/// hello world
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
+
+				/// The amount to be held on deposit by the owner of a crowdfund
+				type SubmissionDeposit: Get<BalanceOf<Self>>;
+
+
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
-		/// The currency in which the crowdfunds will be denominated
+		/// The currency in which the decentralml project will be denominated
 		type Currency: ReservableCurrency<Self::AccountId>;
+
+
+
+
 
 		// The amount to be held on deposit by the owner of a crowdfund
 		// type SubmissionDeposit: Get<BalanceOf<Self>>;
@@ -136,15 +150,67 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
-	
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+
+
+	/// Create a new fund
+	#[pallet::call_index(0)]
+	#[pallet::weight(10_000)]
+	pub fn create(
+		origin: OriginFor<T>,
+		beneficiary: AccountIdOf<T>,
+		goal: BalanceOf<T>, //,
+		end: BlockNumberFor<T>,
+	)-> DispatchResultWithPostInfo {
+		let creator = ensure_signed(origin)?;
+		let now = <frame_system::Pallet<T>>::block_number();
+			ensure!(end > now, Error::<T>::EndTooEarly);
+			let deposit = T::SubmissionDeposit::get();
+		let imb = T::Currency::withdraw(
+			&creator,
+			deposit,
+			WithdrawReasons::TRANSFER,
+			ExistenceRequirement::AllowDeath,
+		)?;
+			
+		let index = <FundCount<T>>::get();
+		// not protected against overflow, see safemath section
+		<FundCount<T>>::put(index + 1);
+		// No fees are paid here if we need to create this account; that's why we don't just
+		// use the stock `transfer`.
+		T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
+
+		<Funds<T>>::insert(index, FundInfo{
+			beneficiary,
+			deposit,
+			raised: Zero::zero(),
+			end,
+			goal,
+		});
+
+		Self::deposit_event(Event::Created(index, now));
+		Ok(().into())
+	}
+
+
+
+
+
+
+
+
+
+
+
+
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::call_index(0)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::do_something())]
 		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -162,7 +228,7 @@ pub mod pallet {
 		}
 
 		/// An example dispatchable that may throw a custom error.
-		#[pallet::call_index(1)]
+		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::cause_error())]
 		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
 			let _who = ensure_signed(origin)?;
@@ -179,6 +245,18 @@ pub mod pallet {
 					Ok(())
 				},
 			}
+		}
+	
+	}
+
+
+	impl<T: Config> Pallet<T> {
+		/// The account ID of the fund pot.
+		///
+		/// This actually does computation. If you need to keep using it, then make sure you cache the
+		/// value and only call this once.
+		pub fn fund_account_id(index: FundIndex) -> T::AccountId {
+			PALLET_ID.into_sub_account_truncating(index)
 		}
 	}
 }

@@ -14,6 +14,7 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system,
 		TemplateModule: pallet_template,
+		Balances: pallet_balances::{Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -46,6 +47,11 @@ impl frame_system::Config for Test {
 impl pallet_template::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
+	type Currency = ();
+	type MinContribution =  frame_support::traits::ConstU128<1>;
+	type SubmissionDeposit = frame_support::traits::ConstU128<1>;
+
+
 }
 
 // Build genesis storage according to the mock runtime.
