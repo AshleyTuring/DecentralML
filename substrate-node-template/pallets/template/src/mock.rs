@@ -14,7 +14,7 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system,
 		TemplateModule: pallet_template,
-		Balances: pallet_balances::{Call, Storage, Config<T>, Event<T>},
+		//Balances: pallet_balances::{Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -48,8 +48,8 @@ impl pallet_template::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type Currency = ();
-	type MinContribution =  frame_support::traits::ConstU128<1>;
-	type SubmissionDeposit = frame_support::traits::ConstU128<1>;
+	type MinContribution =  frame_support::traits::ConstU32<1>;
+	type SubmissionDeposit = frame_support::traits::ConstU32<1>;
 
 
 }
@@ -57,4 +57,5 @@ impl pallet_template::Config for Test {
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+	//let mut ext = sp_io::TestExternalities::new(t);
 }
