@@ -112,12 +112,31 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
+				/// Crowdfund must end after it starts
+				EndTooEarly,
+				/// Must contribute at least the minimum amount of funds
+				ContributionTooSmall,
+				/// The fund index specified does not exist
+				InvalidIndex,
+				/// The crowdfund's contribution period has ended; no more contributions will be accepted
+				ContributionPeriodOver,
+				/// You may not withdraw or dispense funds while the fund is still active
+				FundStillActive,
+				/// You cannot withdraw funds because you have not contributed any
+				NoContribution,
+				/// You cannot dissolve a fund that has not yet completed its retirement period
+				FundNotRetired,
+				/// Cannot dispense funds from an unsuccessful fund
+				UnsuccessfulFund,
 		/// Error names should be descriptive.
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 	}
 
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+	
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
