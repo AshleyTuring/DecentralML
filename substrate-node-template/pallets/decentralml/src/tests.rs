@@ -12,7 +12,7 @@ fn create_fund_works() {
 		let end = 10u64;         // Example block number for end
 
 		// Act
-		let create_result = TemplateModule::create(
+		let create_result = DecentralMLModule::create(
             RuntimeOrigin::signed(1), //Origin::signed(1), // Simulating a signed call from account 1
             beneficiary,
             goal,
@@ -30,19 +30,27 @@ fn create_fund_works() {
 
 		// Assert
 		// Check that the fund count has increased
-		assert_eq!(TemplateModule::fund_count(), 1);
+		assert_eq!(DecentralMLModule::fund_count(), 1);
 
 		// Check that the fund is created with correct details
-		let fund = TemplateModule::funds(0).expect("Fund should be created");
+		let fund = DecentralMLModule::funds(0).expect("Fund should be created");
 		// assert_eq!(fund.beneficiary, beneficiary);
 		// assert_eq!(fund.goal, goal);
 		// assert_eq!(fund.end, end);
 
 
+		// Debug: Print all events
+		let events = frame_system::Pallet::<Test>::events();
+		for event in events.iter() {
+			println!("{:?}", event); // This will print each event to the console
+		}
 
+		System::assert_last_event(Event::Created(0,1).into());
 
 		// Check for the expected event
-		let events = frame_system::Pallet::<Test>::events();
+		let _events = frame_system::Pallet::<Test>::events();
+		assert!(_events.len() > 0);
+		
 		// assert!(matches!(
 		// 	events[events.len() - 1].event,
 		// 	RuntimeEvent::Created(index, _block_number) if index == 0
@@ -59,9 +67,9 @@ fn it_works_for_default_value() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 		// Dispatch a signed extrinsic.
-		assert_ok!(TemplateModule::do_something(RuntimeOrigin::signed(1), 42));
+		assert_ok!(DecentralMLModule::do_something(RuntimeOrigin::signed(1), 42));
 		// Read pallet storage and assert an expected result.
-		assert_eq!(TemplateModule::something(), Some(42));
+		assert_eq!(DecentralMLModule::something(), Some(42));
 		// Assert that the correct event was deposited
 		System::assert_last_event(Event::SomethingStored { something: 42, who: 1 }.into());
 	});
@@ -72,7 +80,7 @@ fn correct_error_for_none_value() {
 	new_test_ext().execute_with(|| {
 		// Ensure the expected error is thrown when no value is present.
 		assert_noop!(
-			TemplateModule::cause_error(RuntimeOrigin::signed(1)),
+			DecentralMLModule::cause_error(RuntimeOrigin::signed(1)),
 			Error::<Test>::NoneValue
 		);
 	});
