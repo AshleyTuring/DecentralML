@@ -40,33 +40,91 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 
-				/// The amount to be held on deposit by the owner of a crowdfund
-				type SubmissionDeposit: Get<BalanceOf<Self>>;
+		/// The reward to be held on deposit by the owner of a task
+		type TaskReward: Get<BalanceOf<Self>>;
 
-
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// Type representing the weight of this pallet
-		type WeightInfo: WeightInfo;
 		/// The currency in which the decentralml project will be denominated
 		type Currency: ReservableCurrency<Self::AccountId>;
-
-
-
-
-
-		// The amount to be held on deposit by the owner of a crowdfund
-		// type SubmissionDeposit: Get<BalanceOf<Self>>;
 
 		/// The minimum amount that may be contributed into a crowdfund. Should almost certainly be at
 		/// least ExistentialDeposit.
 		type MinContribution: Get<BalanceOf<Self>>;
+
+		/// max length of string question
+		type MaxLength: Get<u32>;
+
+
+		/// The amount to be held on deposit by the owner of a crowdfund
+		type SubmissionDeposit: Get<BalanceOf<Self>>;
+
+		/// Because this pallet emits events, it depends on the runtime's definition of an event.
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		/// Type representing the weight of this pallet
+		type WeightInfo: WeightInfo;
+
+		
 	}
+
+	pub type TaskIndex = u32;
+	type TaskInfoOf<T> = TaskInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>, MaxLength>;
+
+	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
 	pub type FundIndex = u32;
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 	type FundInfoOf<T> = FundInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>;
+
+	#[derive(Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct TaskInfo<AccountId, Balance, BlockNumber, MaxLength> {
+
+		creator: AccountId,
+		beneficiary: AccountId,
+		pays_amount: Balance,
+		paid_amount: Balance,
+		expiration_block: BlockNumber,  
+		max_assignments: u32,
+	 	validation_strategy: ValidationStrategy,
+		schedule_autorefund: bool,
+		question: Option<BoundedVec<u8, MaxLength>>,
+	//	description: Option<String>,
+	//	tags: Option<String>,
+		creation_block: BlockNumber,
+
+
+		// The account that will recieve the funds if the campaign is successful
+		// beneficiary: AccountId,
+
+		// /// The amount of deposit placed
+		// deposit: Balance,
+		// /// The total amount raised
+		// raised: Balance,
+		// /// Block number after which funding must have succeeded
+		// end: BlockNumber,
+		// /// Upper bound on `raised`
+		// goal: Balance,
+	}
+
+//Default,
+	#[derive(Encode, Decode, Clone, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+	#[cfg_attr(feature = "std", derive(Debug), feature(field_default))]
+	pub enum ValidationStrategy {
+		//#[default]
+		AutoAccept,
+		ManualAccept,
+		CustomAccept,
+	}
+
+	impl Default for ValidationStrategy {
+		fn default() -> Self {
+			// Choose the default variant for the enum here
+			ValidationStrategy::AutoAccept // Assuming AutoAccept is the default
+		}
+	}
+
+
+
 
 	#[derive(Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 	#[cfg_attr(feature = "std", derive(Debug))]
@@ -82,6 +140,19 @@ pub mod pallet {
 		/// Upper bound on `raised`
 		goal: Balance,
 	}
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn tasks)]
+	/// Info on all of the tasks.
+	pub(super) type Tasks<T: Config> = StorageMap
+	<	_, 
+		Blake2_128Concat, 
+		TaskIndex, 
+		TaskInfoOf<T>,
+		OptionQuery,
+	>;
+
 
 	#[pallet::storage]
 	#[pallet::getter(fn funds)]
@@ -99,6 +170,11 @@ pub mod pallet {
 	/// The total number of funds that have so far been allocated.
 	pub(super) type FundCount<T: Config> = StorageValue<_, FundIndex, ValueQuery>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn task_count)]
+	/// The total number of tasks that have so far been allocated.
+	pub(super) type TaskCount<T: Config> = StorageValue<_, TaskIndex, ValueQuery>;
+
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
 	#[pallet::storage]
@@ -112,6 +188,19 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		TaskCreated(TaskIndex, BlockNumberFor<T>),
+		TaskInprogress(TaskIndex, BlockNumberFor<T>),
+		TaskCompleted(TaskIndex, BlockNumberFor<T>),
+		TaskRejected(TaskIndex, BlockNumberFor<T>),
+
+		ValidationStrategyAutoAccept(TaskIndex, BlockNumberFor<T>),
+		ValidationStrategyManualAccept(TaskIndex, BlockNumberFor<T>),
+		ValidationStrategyCustomAccept(TaskIndex, BlockNumberFor<T>),
+
+		TaskWithdrawal(FundIndex, BlockNumberFor<T>),
+		TaskDissolved(FundIndex, BlockNumberFor<T>),
+		TaskDispensed(FundIndex, BlockNumberFor<T>),
+
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored { something: u32, who: T::AccountId },
@@ -126,6 +215,17 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
+
+		// you must deposit something for every job
+		TaskInvalidPaysAmount,
+
+		/// Task must end after it starts
+		TaskEndTooEarly,
+
+
+		// you have to have at least 1 assigment count of the task 
+		// InvalidMaxAssignments,
+
 				/// Crowdfund must end after it starts
 				EndTooEarly,
 				/// Must contribute at least the minimum amount of funds
@@ -167,7 +267,9 @@ pub mod pallet {
 		goal: BalanceOf<T>, //,
 		end: BlockNumberFor<T>,
 	)-> DispatchResultWithPostInfo {
+		
 		let creator = ensure_signed(origin)?;
+
 		let now = <frame_system::Pallet<T>>::block_number();
 			ensure!(end > now, Error::<T>::EndTooEarly);
 			let deposit = T::SubmissionDeposit::get();
@@ -200,6 +302,137 @@ pub mod pallet {
 
 
 
+	/// Create a new task
+	#[pallet::call_index(1)]
+	#[pallet::weight(10_000)]
+	pub fn create_task(
+        origin: OriginFor<T>,
+        question: Option<BoundedVec<u8, T::MaxLength>>,
+		beneficiary: AccountIdOf<T>,
+        pays_amount: BalanceOf<T>,
+        max_assignments: u32,
+        validation_strategy: ValidationStrategy,
+        schedule_autorefund: bool,
+        expira	: BlockNumberFor<T>,
+
+    ) -> DispatchResultWithPostInfo {
+        // Ensure that the signed origin is the creator or has the right to act on behalf of the creator
+        let creator = ensure_signed(origin)?;
+
+        // Validate pays_amount and max_assignments
+        ensure!(pays_amount > Zero::zero(), Error::<T>::TaskInvalidPaysAmount);
+        //ensure!(max_assignments.map_or(false, |m| m > 0), Error::<T>::InvalidMaxAssignments);
+
+        // Ensure the expiration block is in the future
+        ensure!(expiration_block > frame_system::Pallet::<T>::block_number(), Error::<T>::TaskEndTooEarly);
+
+        // Withdraw the specified amount from the creator's account
+        let imb = T::Currency::withdraw(
+            &creator,
+            pays_amount,
+            WithdrawReasons::TRANSFER,
+            ExistenceRequirement::AllowDeath,
+        )?;
+
+        // Create a new task index
+        let task_index = TaskCount::<T>::get();
+		let creation_block = frame_system::Pallet::<T>::block_number();
+        // Define the new task information
+        let new_task = TaskInfo {
+            creator,
+			question,
+            beneficiary,
+            pays_amount,
+            paid_amount: Zero::zero(),
+            expiration_block,
+            max_assignments,
+            validation_strategy,
+            schedule_autorefund,
+            creation_block,
+        };
+
+        // Insert the new task into storage
+        Tasks::<T>::insert(task_index, new_task);
+        TaskCount::<T>::put(task_index + 1);
+
+        // Deposit the withdrawn amount into the task's fund account
+        T::Currency::resolve_creating(&Self::fund_account_id(task_index), imb);
+
+        // Emit an event for task creation
+        Self::deposit_event(Event::<T>::TaskCreated(task_index,creation_block));
+
+        Ok(().into())
+    }
+	
+	
+	
+	
+	
+	
+	
+	// pub fn create_task(
+	// 	origin: OriginFor<T>,
+	// 	// creator: AccountIdOf<T>,
+	// 	// goal: BalanceOf<T>, //,
+	// 	// end: BlockNumberFor<T>,
+
+	// 	creator: AccountIdOf<T>,
+	// 	beneficiary: AccountIdOf<T>,
+	// 	pays_amount: BalanceOf<T>,
+	// 	paid_amount: BalanceOf<T>,
+	// 	expiration_block: BlockNumberFor<T>,
+	// 	max_assignments: Option<u32>,
+	//  	//validation_strategy: ValidationStrategy,
+	// 	schedule_autorefund: bool,
+	// //	question: Option<String>,
+	// //	description: Option<String>,
+	// //	tags: Option<String>,
+	// 	creation_block: BlockNumberFor<T>,
+
+
+
+
+
+	// )-> DispatchResultWithPostInfo {
+	// 	let creator = ensure_signed(origin)?;
+	// 	let now = <frame_system::Pallet<T>>::block_number();
+	// 		ensure!(expiration_block > now, Error::<T>::EndTooEarly);
+			
+
+
+	// 	let imb = T::Currency::withdraw(
+	// 		&creator,
+	// 		pays_amount,
+	// 		WithdrawReasons::TRANSFER,
+	// 		ExistenceRequirement::AllowDeath,
+	// 	)?;
+			
+	// 	let index = <TaskCount<T>>::get();
+	// 	// not protected against overflow, see safemath section
+	// 	<TaskCount<T>>::put(index + 1);
+	// 	// No fees are paid here if we need to create this account; that's why we don't just
+	// 	// use the stock `transfer`.
+	// 	T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
+
+	// 	<Tasks<T>>::insert(index, TaskInfo{
+	// 		creator,
+	// 		beneficiary,
+	// 		pays_amount,
+	// 		paid_amount,
+	// 		expiration_block,
+	// 		max_assignments,
+	// 		 //validation_strategy: ValidationStrategy,
+	// 		schedule_autorefund,
+	// 	//	question: Option<String>,
+	// 	//	description: Option<String>,
+	// 	//	tags: Option<String>,
+	// 		creation_block,
+	// 	});
+
+	// 	Self::deposit_event(Event::Created(index, now));
+	// 	Ok(().into())
+	// }
+
 
 
 
@@ -210,7 +443,7 @@ pub mod pallet {
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::call_index(1)]
+		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::do_something())]
 		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -228,7 +461,7 @@ pub mod pallet {
 		}
 
 		/// An example dispatchable that may throw a custom error.
-		#[pallet::call_index(2)]
+		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::cause_error())]
 		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
 			let _who = ensure_signed(origin)?;
