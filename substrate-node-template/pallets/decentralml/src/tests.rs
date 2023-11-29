@@ -1,6 +1,87 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
 
+use crate::ValidationStrategy;
+use frame_support::BoundedVec;
+use sp_core::ConstU32;
+
+#[test]
+    fn create_task_works() {
+        new_test_ext().execute_with(|| {
+            // Arrange
+            let creator = 1; // Example creator AccountId
+            let beneficiary = 1; // Example beneficiary AccountId
+            let pays_amount = 1000u32; // Example pays amount
+            let max_assignments = 5u32; // Example max assignments
+            let validation_strategy = ValidationStrategy::AutoAccept; // Example validation strategy
+            let schedule_autorefund = true;
+            let expiration_block = 10; // Example expiration block
+
+			    // Convert question string to BoundedVec
+				let question_str = b"Task Question"; // Byte string
+				let question_vec: Vec<u8> = question_str.to_vec(); // Convert to Vec<u8>
+				let question_bounded: BoundedVec<u8, _> = question_vec.try_into().expect("Question string is too long"); // Convert to BoundedVec
+				let question = Some(question_bounded); // Now the correct type
+		
+
+            // Act
+            let create_task_result = DecentralMLModule::create_task(
+                RuntimeOrigin::signed(creator),
+                question,
+                beneficiary,
+                pays_amount,
+                max_assignments,
+                validation_strategy,
+                schedule_autorefund,
+                expiration_block
+            );
+
+            // Assert
+            assert_ok!(create_task_result);
+
+      // Assert the task count has increased
+	  assert_eq!(DecentralMLModule::task_count(), 1);
+
+	  // Assert the task is created with correct details
+	  let task = DecentralMLModule::tasks(0).expect("Task should be created");
+	  assert_eq!(task.creator, creator);
+	  assert_eq!(task.beneficiary, beneficiary);
+	  assert_eq!(task.pays_amount, pays_amount);
+	  assert_eq!(task.max_assignments, max_assignments);
+	  assert_eq!(task.validation_strategy, ValidationStrategy::AutoAccept);
+	  assert_eq!(task.schedule_autorefund, schedule_autorefund);
+	  assert_eq!(task.expiration_block, expiration_block);
+
+	  // Optionally check the question if it's critical
+		    // Convert question string to BoundedVec
+			let questiontest_str = b"Task Question"; // Byte string
+			let questiontest_vec: Vec<u8> = questiontest_str.to_vec(); // Convert to Vec<u8>
+			let questiontest_bounded: BoundedVec<u8, ConstU32<1024>> = questiontest_vec.try_into()
+			.expect("Question string is too long");
+
+	  if let Some(question) = task.question {
+		  assert_eq!(question, questiontest_bounded);
+	  }
+
+	  // Assert the correct event was emitted
+	 // let expected_event = Event::TaskCreated(0, 1).into();
+
+	 // let _events = System::events();
+
+	  //assert!(System::events().iter().any(|a| a.event == expected_event));
+
+	  //System::assert_last_event(expected_event);
+			
+
+        });
+    }
+
+
+
+
+
+
+
 
 
 #[test]

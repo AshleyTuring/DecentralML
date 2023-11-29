@@ -271,7 +271,7 @@ impl pallet_sudo::Config for Runtime {
 }
 
 const MIN_CONTRIBUTION_VALUE: u128 = 1_000; // Replace with the desired value
-
+const MAX_VALUE: u32 = 1_000;
 
 
 // Configure the pallet-template in pallets/template.
@@ -283,6 +283,7 @@ impl pallet_decentralml::Config for Runtime {
 	type SubmissionDeposit = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
 	
 	type TaskReward = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
+	type MaxLength = frame_support::traits::ConstU32<MAX_VALUE>;
 	
 }
 

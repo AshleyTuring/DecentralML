@@ -51,6 +51,7 @@ pub mod pallet {
 		type MinContribution: Get<BalanceOf<Self>>;
 
 		/// max length of string question
+		#[pallet::constant]
 		type MaxLength: Get<u32>;
 
 
@@ -67,7 +68,7 @@ pub mod pallet {
 	}
 
 	pub type TaskIndex = u32;
-	type TaskInfoOf<T> = TaskInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>, MaxLength>;
+	type TaskInfoOf<T> = TaskInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>;//, T::MaxLength>;
 
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
@@ -77,20 +78,22 @@ pub mod pallet {
 
 	#[derive(Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 	#[cfg_attr(feature = "std", derive(Debug))]
-	pub struct TaskInfo<AccountId, Balance, BlockNumber, MaxLength> {
+	pub struct TaskInfo<AccountId, Balance, BlockNumber>//, MaxLength> 
+	//where MaxLength: Get<u32>,
+	{
 
-		creator: AccountId,
-		beneficiary: AccountId,
-		pays_amount: Balance,
-		paid_amount: Balance,
-		expiration_block: BlockNumber,  
-		max_assignments: u32,
-	 	validation_strategy: ValidationStrategy,
-		schedule_autorefund: bool,
-		question: Option<BoundedVec<u8, MaxLength>>,
+		pub creator: AccountId,
+		pub beneficiary: AccountId,
+		pub pays_amount: Balance,
+		pub paid_amount: Balance,
+		pub expiration_block: BlockNumber,  
+		pub max_assignments: u32,
+		pub validation_strategy: ValidationStrategy,
+		pub schedule_autorefund: bool,
+		pub question: Option<BoundedVec<u8,ConstU32<1024>>>,
 	//	description: Option<String>,
 	//	tags: Option<String>,
-		creation_block: BlockNumber,
+	pub creation_block: BlockNumber,
 
 
 		// The account that will recieve the funds if the campaign is successful
@@ -307,13 +310,13 @@ pub mod pallet {
 	#[pallet::weight(10_000)]
 	pub fn create_task(
         origin: OriginFor<T>,
-        question: Option<BoundedVec<u8, T::MaxLength>>,
+        question: Option<BoundedVec<u8,ConstU32<1024>>>,
 		beneficiary: AccountIdOf<T>,
         pays_amount: BalanceOf<T>,
         max_assignments: u32,
         validation_strategy: ValidationStrategy,
         schedule_autorefund: bool,
-        expira	: BlockNumberFor<T>,
+        expiration_block	: BlockNumberFor<T>,
 
     ) -> DispatchResultWithPostInfo {
         // Ensure that the signed origin is the creator or has the right to act on behalf of the creator

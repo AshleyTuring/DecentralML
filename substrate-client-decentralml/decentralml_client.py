@@ -1,88 +1,73 @@
-from substrateinterface import SubstrateInterface
-from substrateinterface import Keypair
+from substrateinterface import SubstrateInterface, Keypair
+from substrateinterface.exceptions import SubstrateRequestException
 
+# Constants
+SOCKET_URL = "ws://127.0.0.1:9944"
+
+# Helper Functions
+def get_validation_strategy_index(strategy):
+    mapping = {
+        'AutoAccept': 0,
+        'ManualAccept': 1,
+        'CustomAccept': 2,
+    }
+    return mapping.get(strategy, 0)
+
+def create_task(substrate, passphrase_file_path, question, beneficiary_account_id, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block):
+    # Load the keypair
+    with open(passphrase_file_path) as f:
+        passphrase = f.read().strip()
+    keypair = Keypair.create_from_mnemonic(passphrase)
+
+    # Compose the call
+    call_module = 'DecentralMLModule'
+    call_function = 'create_task'
+    validation_strategy_index = get_validation_strategy_index(validation_strategy)
+
+    question_bytes = question.encode()  # Convert string to bytes
+
+    call = substrate.compose_call(
+        call_module=call_module,
+        call_function=call_function,
+        call_params={
+            'question': question_bytes,
+            'beneficiary': beneficiary_account_id,
+            'pays_amount': pays_amount,
+            'max_assignments': max_assignments,
+            'validation_strategy': validation_strategy_index,
+            'schedule_autorefund': schedule_autorefund,
+            'expiration_block': expiration_block
+        }
+    )
+
+    # Create and send the signed extrinsic
+    extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
+    try:
+        receipt = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+        print(f"Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
+    except SubstrateRequestException as e:
+        print(f"Failed to send extrinsic: {e}")
 
 def main():
-
-
-    # upload the model to IPFS
-    model_file = open(PATH_TO_FEDERATED_MODEL, 'rb')
-    model_hash_id = upload_files_to_ipfs({'file1': model_file})[0]
-    model_file.close()
-
-    # upload the training data to IPFS
-    training_data_file = open(PATH_TO_TRAINING_FEDERATED_DATA, 'rb')
-    training_data_hash_id = upload_files_to_ipfs({'file1': training_data_file})[0]
-    training_data_file.close()
-
-    # upload the docker image to IPFS
-    docker_image_file = open(PATH_TO_FEDERATED_MACHINE_LEARNING_DOCKER, 'rb')
-    docker_image_hash_id = upload_files_to_ipfs({'file1': docker_image_file})[0]
-
-    print("Connecting to substrate node...")
-
-    substrate = SubstrateInterface(url="ws://127.0.0.1:9944",)
-
-    call_module = 'TemplateModule'  # TemplateModule
-    call_function = 'do_something'  # do_something
-
-    call = substrate.compose_call(
-        call_module=call_module,
-        call_function=call_function,
-        call_params={'something': 42})
-
-    # call_module = 'DecentralML'  # TemplateModule
-    # call_function = 'create_hit_'  # do_something
-
-    # call = substrate.compose_call(
-    #     call_module=call_module,
-    #     call_function=call_function,
-    #     call_params={'title': 'Picture Job Request',
-    #                  'description': 'Job request to describe a picture',
-    #                  'question': 'What do you see?',
-    #                  'assignmentDurationInSeconds': 3600,
-    #                  'lifetimeInSeconds': 86400,
-    #                  'maxAssignments': 5})
-
-    keypair = Keypair.create_from_uri('//Alice')
-    extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
-
-    receipt = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-
-    print(f"Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
-
-
-def create(account_json_recovery_file_path, passphrase_file_path, beneficiary_account_id, goal, end):
-
+    # Connect to the Substrate node
     substrate = SubstrateInterface(url=SOCKET_URL)
-
-    call_module = 'DecentralMLModule'  # TemplateModule
-    call_function = 'create'  # do_something
-
-    call = substrate.compose_call(
-        call_module=call_module,
-        call_function=call_function,
-        call_params={'beneficiary': beneficiary_account_id, 'goal': goal, 'end': end})
-
-    # keypair = Keypair.create_from_uri('//Alice')
-    with open(account_json_recovery_file_path, 'r') as j:
-        json_data = json.loads(j.read())
-
+    import os
+    current_path = os.getcwd()
+    # Example values, replace with real data
+    passphrase_file_path = r'/home/ashsubband/decentralML/substrate-client-decentralml/testwallet_passphrase.txt'
     with open(passphrase_file_path) as f:
         passphrase = f.read() # fatal inject wave unusual accuse suit divide grit equal bundle diet pistol
 
-    #keypair = Keypair.create_from_encrypted_json(json_data, passphrase)
-    keypair = Keypair.create_from_mnemonic(passphrase)
+    question = "Some question"
+    beneficiary_account_id = 1
+    pays_amount = 1
+    max_assignments = 5
+    validation_strategy = "CustomAccept"
+    schedule_autorefund = True
+    expiration_block = 10
 
-    private_key = keypair.private_key
-    public_key = keypair.public_key
-
-    extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
-    receipt = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-
-    print(f"Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
-
-
+    # Create a task
+    create_task(substrate, passphrase_file_path, question, beneficiary_account_id, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block)
 
 if __name__ == "__main__":
     main()

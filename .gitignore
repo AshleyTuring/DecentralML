@@ -20,3 +20,4 @@ maindecentralml.code-workspace
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/.gitignore
 .gitignore
+substrate-client-decentralml/testwallet_passphrase.txt
