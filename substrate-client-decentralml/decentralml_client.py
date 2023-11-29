@@ -19,14 +19,9 @@ def main():
     docker_image_file = open(PATH_TO_FEDERATED_MACHINE_LEARNING_DOCKER, 'rb')
     docker_image_hash_id = upload_files_to_ipfs({'file1': docker_image_file})[0]
 
-
-    
-
-
     print("Connecting to substrate node...")
 
     substrate = SubstrateInterface(url="ws://127.0.0.1:9944",)
-
 
     call_module = 'TemplateModule'  # TemplateModule
     call_function = 'do_something'  # do_something
