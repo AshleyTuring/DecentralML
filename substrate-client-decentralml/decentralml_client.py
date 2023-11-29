@@ -52,5 +52,37 @@ def main():
     print(f"Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
 
 
+def create(account_json_recovery_file_path, passphrase_file_path, beneficiary_account_id, goal, end):
+
+    substrate = SubstrateInterface(url=SOCKET_URL)
+
+    call_module = 'DecentralMLModule'  # TemplateModule
+    call_function = 'create'  # do_something
+
+    call = substrate.compose_call(
+        call_module=call_module,
+        call_function=call_function,
+        call_params={'beneficiary': beneficiary_account_id, 'goal': goal, 'end': end})
+
+    # keypair = Keypair.create_from_uri('//Alice')
+    with open(account_json_recovery_file_path, 'r') as j:
+        json_data = json.loads(j.read())
+
+    with open(passphrase_file_path) as f:
+        passphrase = f.read() # fatal inject wave unusual accuse suit divide grit equal bundle diet pistol
+
+    #keypair = Keypair.create_from_encrypted_json(json_data, passphrase)
+    keypair = Keypair.create_from_mnemonic(passphrase)
+
+    private_key = keypair.private_key
+    public_key = keypair.public_key
+
+    extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
+    receipt = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+
+    print(f"Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
+
+
+
 if __name__ == "__main__":
     main()

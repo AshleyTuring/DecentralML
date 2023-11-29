@@ -72,5 +72,5 @@ if __name__ == "__main__":
              }
 
     hash_ids = upload_files_to_ipfs(files)
-    files = retrieve_files_from_ipfs(hash_ids)
+    # files = retrieve_files_from_ipfs(hash_ids)
     # responses = delete_files_from_ipfs(files)
