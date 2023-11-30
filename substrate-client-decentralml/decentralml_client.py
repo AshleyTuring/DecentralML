@@ -4,14 +4,7 @@ from substrateinterface.exceptions import SubstrateRequestException
 # Constants
 SOCKET_URL = "ws://127.0.0.1:9944"
 
-# Helper Functions
-def get_validation_strategy_index(strategy):
-    mapping = {
-        'AutoAccept': 0,
-        'ManualAccept': 1,
-        'CustomAccept': 2,
-    }
-    return mapping.get(strategy, 0)
+
 
 def create_task(substrate, passphrase_file_path, question, beneficiary_account_id, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block):
     # Load the keypair
@@ -71,3 +64,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Helper Functions
+def get_validation_strategy_index(strategy):
+    mapping = {
+        'AutoAccept': 0,
+        'ManualAccept': 1,
+        'CustomAccept': 2,
+    }
+    return mapping.get(strategy, 0)
