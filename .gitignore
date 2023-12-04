@@ -21,3 +21,4 @@ maindecentralml.code-workspace
 .idea/.gitignore
 .gitignore
 substrate-client-decentralml/testwallet_passphrase.txt
+substrate-front-end-template

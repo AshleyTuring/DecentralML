@@ -1,8 +1,8 @@
-# Substrate Node Template
+# DecentralML (and Substrate Node Template)
 
-A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
+A fresh [DecentralML Substrate](https://substrate.io/) node, ready for you to create some custom tasks and validation strategies.
 
-A standalone version of this template is available for each release of Polkadot in the [Substrate Developer Hub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/) repository.
+This work is based on the substrate standalone template available for each release of Polkadot in the [Substrate Developer Hub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/) repository.
 The parachain template is generated directly at each Polkadot release branch from the [Node Template in Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-template) upstream
 
 It is usually best to use the stand-alone version to start a new project.
@@ -27,7 +27,7 @@ cargo build --release
 After you build the project, you can use the following command to explore its parameters and subcommands:
 
 ```sh
-./target/release/node-template -h
+./target/release/node-decentralml -h
 ```
 
 You can generate and view the [Rust Docs](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) for this template with this command:
@@ -41,19 +41,19 @@ cargo +nightly doc --open
 The following command starts a single-node development chain that doesn't persist state:
 
 ```sh
-./target/release/node-template --dev
+./target/release/node-decentralml --dev
 ```
 
 To purge the development chain's state, run the following command:
 
 ```sh
-./target/release/node-template purge-chain --dev
+./target/release/node-decentralml purge-chain --dev
 ```
 
 To start the development chain with detailed logging, run the following command:
 
 ```sh
-RUST_BACKTRACE=1 ./target/release/node-template -ldebug --dev
+RUST_BACKTRACE=1 ./target/release/node-decentralml -ldebug --dev
 ```
 
 Development chains:
@@ -92,7 +92,7 @@ You can also find the source code and instructions for hosting your own instance
 
 If you want to see the multi-node consensus algorithm in action, see [Simulate a network](https://docs.substrate.io/tutorials/build-a-blockchain/simulate-network/).
 
-## Template Structure
+## DecentralML is based on the Template Structure
 
 A Substrate project such as this consists of a number of components that are spread across a few directories.
 
@@ -110,7 +110,8 @@ Substrate-based blockchain nodes expose a number of capabilities:
 There are several files in the `node` directory.
 Take special note of the following:
 
-- [`chain_spec.rs`](./node/src/chain_spec.rs): A [chain specification](https://docs.substrate.io/build/chain-spec/) is a source code file that defines a Substrate chain's initial (genesis) state.
+- [`chain_spec.rs`](./node/src/chain_spec.rs): A [chain specification](https://docs.substrate.io/build/chain-spec/) is a source code file that defines a Substrate chain's initial (genesis) state. We have updated this file for DecentralML.
+
   Chain specifications are useful for development and testing, and critical when architecting the launch of a production chain.
   Take note of the `development_config` and `testnet_genesis` functions,.
   These functions are used to define the genesis state for the local development chain configuration.
@@ -126,7 +127,8 @@ Take special note of the following:
 In Substrate, the terms "runtime" and "state transition function" are analogous.
 Both terms refer to the core logic of the blockchain that is responsible for validating blocks and executing the state changes they define.
 The Substrate project in this repository uses [FRAME](https://docs.substrate.io/learn/runtime-development/#frame) to construct a blockchain runtime.
-FRAME allows runtime developers to declare domain-specific logic in modules called "pallets".
+FRAME allows runtime developers to declare domain-specific logic in modules called "pallets". In our case we have implemented a custom pallet called pallet_decentralml.
+
 At the heart of FRAME is a helpful [macro language](https://docs.substrate.io/reference/frame-macros/) that makes it easy to create pallets and flexibly compose them to create blockchains that can address [a variety of needs](https://substrate.io/ecosystem/projects/).
 
 Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this template and note the following:
