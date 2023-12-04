@@ -1,4 +1,5 @@
 # DecentralML
+
 A Polkadot protocol for decentralised federated machine learning and collective safety consensus
 
 ### Overview
@@ -9,9 +10,9 @@ Project Description:
 DecentralML introduces decentralised federated machine learning (DFML), governed by collective consensus to the Polkadot ecosystem. Our goal is to provide a robust framework for AI model developers, organisations, and applications, enabling decentralised ownership of models while ensuring privacy and scalability. With node or on-device training protecting privacy, the ability to share data training between organisations (nodes), collaborative AI training, and "collective" governance controls, DecentralML may transform the field of machine learning for state-of-the-art AI models (think LLMs and more) with transparent governance.
 
 Integration with Substrate / Polkadot / Kusama:
-DecentralML is built upon the Substrate framework, and leverages Tensorflow's extenisve Federated Machine Learning library enabling seamless integration into the Polkadot ecosystem. By leveraging Substrate's flexible and modular pallet architecture, we can shortcut a lot of the overhead needed to create a chain that has a dynamic "collective" consensus governance approach for things like AI model weights and other safety measures along with higher level controls for licensing of the entire models, jurisdiction training rules and other multi-territorial controls.  
+DecentralML is built upon the Substrate framework, and leverages Tensorflow's extenisve Federated Machine Learning library enabling seamless integration into the Polkadot ecosystem. By leveraging Substrate's flexible and modular pallet architecture, we can shortcut a lot of the overhead needed to create a chain that has a dynamic "collective" consensus governance approach for things like AI model weights and other safety measures along with higher level controls for licensing of the entire models, jurisdiction training rules and other multi-territorial controls.
 
-The project aims to be as open and flexible as possible to integrate with other project with an innovative "bring your own" (BYO) token staking economy (faciliated by Pallets such as Balances, Grandpa, Ink! etc). 
+The project aims to be as open and flexible as possible to integrate with other project with an innovative "bring your own" (BYO) token staking economy (faciliated by Pallets such as Balances, Grandpa, Ink! etc).
 
 We hope for active engagement from the wider Polkadot ecosystem and developer network once the project is complete or even during its development. We strongly believe that this project holds the transformative power to revolutionise the entire AI industry!
 
@@ -22,16 +23,14 @@ Our second motivation as Livetree, involves a solution for our AI tasks such as 
 
 We are passionate about decentralisation and see the limitations of centralisation in terms of quality of the models, data ownership, privacy, and safety control. This has fueled our motivation to decentralise these models and create a decentralised federated machine learning substrate:
 
-
-
 # DecentralML pallet
 
 This is the DecentralML pallet implementation.
 
 ## Getting Started
 
-
 ### Run
+
 First, complete the [basic Rust setup instructions](https://docs.substrate.io/install/).
 Use Rust's native `cargo` command to build and launch the DecentralML pallet:
 
@@ -134,6 +133,23 @@ Then run the following command to start a single node development chain.
 
 This command will firstly compile your code, followed by the whole unit test run, and then start a
 local development network.
+
+### Python interface to interact with Substrate node and custom pallets
+
+decentralml_client.py Python script exposes and provides methods to communicate with Substrate framework to fund actors involved and execute tasks on the node.
+
+This is achieve by installing the substrate-interface package into your distribution.
+
+You must install it before running the script using pip command
+
+```bash
+pip install substrate-interface
+```
+
+If you don't have pip installed on your machine, please refer to the [Installation] https://pip.pypa.io/en/stable/installation/
+
+Please see the [Substrate documentation](https://pypi.org/project/substrate-interface/1.4.1/)
+for API reference documentation
 
 ## Test
 
