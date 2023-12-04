@@ -4,9 +4,16 @@ from substrateinterface.exceptions import SubstrateRequestException
 # Constants
 SOCKET_URL = "ws://127.0.0.1:9944"
 
+# Helper Functions
+def get_validation_strategy_dict(strategy):
+    # Updated to return a dictionary with the strategy as a key and its index as a value
+    return {strategy: {
+        'AutoAccept': 0,
+        'ManualAccept': 1,
+        'CustomAccept': 2,
+    }.get(strategy, 0)}
 
-
-def create_task(substrate, passphrase_file_path, question, beneficiary_account_id, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block):
+def create_task(substrate, passphrase_file_path, question, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block):
     # Load the keypair
     with open(passphrase_file_path) as f:
         passphrase = f.read().strip()
@@ -15,19 +22,27 @@ def create_task(substrate, passphrase_file_path, question, beneficiary_account_i
     # Compose the call
     call_module = 'DecentralMLModule'
     call_function = 'create_task'
-    validation_strategy_index = get_validation_strategy_index(validation_strategy)
+    
 
     question_bytes = question.encode()  # Convert string to bytes
+
+
+    print(f"pays_amount: {pays_amount}, type: {type(pays_amount)}")
+    print(f"max_assignments: {max_assignments}, type: {type(max_assignments)}")
+    print(f"schedule_autorefund: {schedule_autorefund}, type: {type(schedule_autorefund)}")
+    print(f"expiration_block: {expiration_block}, type: {type(expiration_block)}")
+
+
+    validation_strategy_dict = get_validation_strategy_dict(validation_strategy)
 
     call = substrate.compose_call(
         call_module=call_module,
         call_function=call_function,
         call_params={
-            'question': question_bytes,
-            'beneficiary': beneficiary_account_id,
-            'pays_amount': pays_amount,
+           'question': question_bytes,
+            'pays_amount': 1 * 10**12,
             'max_assignments': max_assignments,
-            'validation_strategy': validation_strategy_index,
+            'validation_strategy': validation_strategy_dict,
             'schedule_autorefund': schedule_autorefund,
             'expiration_block': expiration_block
         }
@@ -52,24 +67,16 @@ def main():
         passphrase = f.read() # fatal inject wave unusual accuse suit divide grit equal bundle diet pistol
 
     question = "Some question"
-    beneficiary_account_id = 1
-    pays_amount = 1
+    pays_amount = 1000000000000000000
     max_assignments = 5
-    validation_strategy = "CustomAccept"
+    validation_strategy = 'CustomAccept'
     schedule_autorefund = True
     expiration_block = 10
 
     # Create a task
-    create_task(substrate, passphrase_file_path, question, beneficiary_account_id, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block)
+    create_task(substrate, passphrase_file_path, question, pays_amount, max_assignments, validation_strategy, schedule_autorefund, expiration_block)
 
 if __name__ == "__main__":
     main()
 
-# Helper Functions
-def get_validation_strategy_index(strategy):
-    mapping = {
-        'AutoAccept': 0,
-        'ManualAccept': 1,
-        'CustomAccept': 2,
-    }
-    return mapping.get(strategy, 0)
+
