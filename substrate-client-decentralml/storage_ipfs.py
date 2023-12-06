@@ -66,11 +66,27 @@ def delete_files_from_ipfs(hash_ids):
 
 if __name__ == "__main__":
 
-    files = {
-                'file1': '/Users/youss/Projects/Substrate/ipfs/infura_test.txt',
-                'file2': '/Users/youss/Projects/Substrate/ipfs/infura_test_1.txt'
-             }
+    print("Uploading files...")
 
-    hash_ids = upload_files_to_ipfs(files)
-    # files = retrieve_files_from_ipfs(hash_ids)
-    # responses = delete_files_from_ipfs(files)
+    nft_picture = {'fox': './assets/fox_nft.jpeg'}
+    ai_picture = {'ai': './assets/ai.jpeg'}
+    braincells_picture = {'brain-cells': './assets/brain_cells.jpeg'}
+    deeplearning_picture = {'deep-learning': './assets/deep_learning.jpeg'}
+    model_contributor_script = {'model-contributor-script': './assets/model_contributor_script.py'}
+    engineer_model = {'engineer-model': './assets/engineer_model.bin'}
+
+    nft_picture_id = upload_files_to_ipfs(nft_picture) # 'QmeLf6QXM5AZngDaaBARN3JavpKdQmc4SgV89LUd93hBbg'
+    ai_picture_id = upload_files_to_ipfs(ai_picture) # 'QmafZQ5WubBn5UANPYVvv7XUfBR2kP6rtLJtmBaxYseupi'
+    braincells_picture_id = upload_files_to_ipfs(braincells_picture) # 'QmNzH7YAjr4VYsVXqJLJrjdC94rs5s487R15rXfMJtc3E7'
+    deeplearning_picture_id = upload_files_to_ipfs(deeplearning_picture) # 'QmWHGj31VYv1gJvNdss5QATQkHeck2EgBg85QixkU7aKFF'
+    model_contributor_script_id = upload_files_to_ipfs(model_contributor_script) # 'QmeaXFDrJJdZsQo7SYMP2GBoX83Ee2sx5XNQHA5vBXP2uB'
+    engineer_model_id = upload_files_to_ipfs(engineer_model) # 'QmauWpePXRSqWpvi1n9D3QA7vyZvsAvVSbVv6anAvrAahQ'
+
+    # file = retrieve_files_from_ipfs(nft_picture_id)
+    # file = retrieve_files_from_ipfs(ai_picture_id)
+    # file = retrieve_files_from_ipfs(braincells_picture_id)
+    # file = retrieve_files_from_ipfs(deeplearning_picture_id)
+    # file = retrieve_files_from_ipfs(model_contributor_script_id)
+    # file = retrieve_files_from_ipfs(engineer_model_id)
+
+    print("Upload completed successfully.")

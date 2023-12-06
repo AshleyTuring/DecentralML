@@ -24,3 +24,5 @@ substrate-node-decentralml/tmpstate
 substrate-client-decentralml/testwallet_passphrase.txt
 substrate-front-end-template
 .idea/workspace.xml
+substrate-client-decentralml/__pycache__/utilities.cpython-311.pyc
+substrate-node-template/Cargo.lock
