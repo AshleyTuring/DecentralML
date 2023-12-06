@@ -68,6 +68,14 @@ pub mod pallet {
 
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+
+		#[pallet::constant]
+		type MaxOpenTasks: Get<u32>;
+
+		#[pallet::constant]
+		type MaxSubmissionsPerWorker: Get<u32>;
+
+		
 		
 	}
 
@@ -144,6 +152,8 @@ pub mod pallet {
 
 		/// the task id note there is a 1 to many relationship between tasks and submissions
 		pub task_id: u32,
+		/// each submission has it's own id 
+		pub submission_id: u32, // Added field
 		/// the worker that submitted the task
 		pub worker: AccountId,
 		/// the block the task was created
@@ -247,6 +257,17 @@ pub mod pallet {
 	}
 	
 
+	// Storage map to hold worker and their task result submissions
+	#[pallet::storage]
+	#[pallet::getter(fn worker_submissions)]
+	pub(super) type WorkerSubmissions<T: Config> = StorageMap<
+		_, 
+		Blake2_128Concat, 
+		AccountIdOf<T>, 
+		BoundedVec<TaskResultSubmissionIndex, T::MaxSubmissionsPerWorker>, 
+		ValueQuery
+	>;
+
 
 	#[pallet::storage]
 	#[pallet::getter(fn taskresultsubmissions)]
@@ -291,6 +312,12 @@ pub mod pallet {
 	OptionQuery,
 	>;
 
+
+	#[pallet::storage]
+	#[pallet::getter(fn open_tasks)]
+	/// Array of TaskIndex for open tasks (Created, InProgress).
+	pub(super) type OpenTasks<T: Config> = StorageValue<_, BoundedVec<TaskIndex, T::MaxOpenTasks>, ValueQuery>;
+	
 
 
 	#[pallet::storage]
@@ -347,7 +374,7 @@ pub mod pallet {
 	#[pallet::error]
 	pub enum Error<T> {
 
-		// you must deposit something for every job
+		/// you must deposit something for every job
 		TaskInvalidPaysAmount,
 		/// Task must end after it starts
 		TaskEndTooEarly,
@@ -377,6 +404,34 @@ pub mod pallet {
 		TaskNotFound,
 		/// The task has reached its maximum number of assignments.
 		MaxAssignmentsReached,
+		/// Reached 1 million open tasks 
+		OpenTasksLimitReached,
+
+		/// This error indicates that a specified task result submission could not be found in the system.
+		/// It occurs when a function tries to retrieve a `TaskResultSubmission` from storage using a given `submission_index`, 
+		/// but no corresponding entry exists.
+		SubmissionNotFound,
+
+		/// This error suggests that the task result submission is in an inappropriate status for the requested operation.
+		/// It is used when an operation requires the `TaskResultSubmission` to be in a specific state (e.g., 'Assigned'), 
+		/// but the actual status of the submission is different.
+		InvalidStatus,
+
+		/// This error implies that the caller of the function does not have the necessary permissions to perform the action.
+		/// It is returned when a caller, typically a worker, attempts to perform an operation on a submission that they do not own
+		/// or are not authorized to modify.
+		NotAuthorized,
+
+		/// This error is used when a worker has reached the limit of task result submissions they are allowed to make.
+		/// It prevents a single worker from submitting results for an excessive number of tasks, ensuring fair opportunity for others.
+		WorkerSubmissionLimit,
+
+		/// This error indicates that the submission of task results is either incomplete or improperly formatted.
+		/// It is triggered when a `TaskResultSubmission` lacks necessary information, such as a result or result path,
+		/// or if the provided information does not meet the required criteria. This can include cases where a result
+		/// path is provided without accompanying storage type and credentials, or when both result and result path
+		/// are missing in the submission.
+		InvalidResultSubmission,
 
 
 	}
@@ -423,14 +478,11 @@ pub mod pallet {
 	/// - `model_engineer_path`: For ModelEngineer tasks, the path to the model. Optional and a bounded vector of bytes.
 	/// - `model_engineer_storage_type`: Storage type for the model, e.g., IPFS, S3. Optional.
 	/// - `model_engineer_storage_credentials`: Credentials for accessing the model storage. Optional and a bounded vector of bytes.
-
 	/// # Errors
 	/// Returns an error if any validation fails, including invalid payment amount, premature expiration 
 	/// block, missing required parameters based on task type, etc.
-
 	/// # Events
 	/// Emits `TaskCreated` event on successful task creation.
-
 	/// # Example
 	/// ```
 	/// Pallet::create_task(
@@ -565,6 +617,12 @@ pub mod pallet {
 	
 		// Inserts the new task into storage
 		Tasks::<T>::insert(task_index, new_task);
+
+
+		// Update OpenTasks storage
+		let mut open_tasks = OpenTasks::<T>::get();
+		open_tasks.try_push(task_index).map_err(|_| Error::<T>::OpenTasksLimitReached)?;
+		OpenTasks::<T>::put(open_tasks);
 	
 		// Emits an event for task creation
 		Self::deposit_event(Event::TaskCreated{taskid:task_index, created:creation_block});
@@ -624,6 +682,7 @@ pub mod pallet {
         // Create a new TaskResultSubmission
         let new_submission = TaskResultSubmission {
             task_id,
+			submission_id: submission_index,
             worker: worker.clone(),
             created_block: creation_block,
             result: None,
@@ -643,6 +702,25 @@ pub mod pallet {
         submission_ids[submission_count as usize] = submission_index;
         TaskResultSubmissionIds::<T>::insert(task_id, submission_ids);
 
+		// Add to WorkerSubmissions
+		// Retrieve the current submissions for the worker, or initialize with an empty BoundedVec if none exist
+		let mut worker_submissions = WorkerSubmissions::<T>::get(&worker);
+
+		// Attempt to add the new submission index to the worker's submissions
+		if worker_submissions.try_push(submission_index).is_err() {
+			return Err(Error::<T>::WorkerSubmissionLimit.into());
+		}
+		// Update the worker's submissions in storage
+		WorkerSubmissions::<T>::insert(&worker, worker_submissions);
+
+
+		// If the task has reached its maximum number of assignments, remove it from OpenTasks
+		if submission_count == task.max_assignments {
+			let mut open_tasks = OpenTasks::<T>::get();
+			open_tasks.retain(|&x| x != task_id);
+			OpenTasks::<T>::put(open_tasks);
+		}
+
         // Emit an event
         Self::deposit_event(Event::TaskAssigned {
             task_id,
@@ -653,6 +731,37 @@ pub mod pallet {
         Ok(().into())
     }
 
+
+	// Updated send_task_result function
+	#[pallet::call_index(2)]
+	#[pallet::weight(10_000)]
+	pub fn send_task_result(origin: OriginFor<T>, submission_index: TaskResultSubmissionIndex) -> DispatchResultWithPostInfo {
+		let worker = ensure_signed(origin)?;
+
+		// Retrieve the task result submission
+		let mut submission = TaskResultSubmissions::<T>::get(submission_index).ok_or(Error::<T>::SubmissionNotFound)?;
+
+		// Ensure the submission is assigned to the worker and is in the Assigned status
+		ensure!(submission.worker == worker, Error::<T>::NotAuthorized);
+		ensure!(submission.status == ResultSubmissionStatus::Assigned, Error::<T>::InvalidStatus);
+
+		// Check if result or result path with required details are provided
+		if ((submission.result.is_none() && submission.result_path.is_none()) || (!submission.result_path.is_none() && (submission.result_storage_type.is_none() || submission.result_storage_credentials.is_none())))
+		{
+			return Err(Error::<T>::InvalidResultSubmission.into());
+		}
+
+		// Update the submission status to PendingValidation
+		submission.status = ResultSubmissionStatus::PendingValidation;
+		TaskResultSubmissions::<T>::insert(submission_index, submission);
+
+		// Update WorkerSubmissions storage
+		let mut worker_submissions = WorkerSubmissions::<T>::get(&worker);
+		worker_submissions.try_push(submission_index).map_err(|_| Error::<T>::WorkerSubmissionLimit)?;
+		WorkerSubmissions::<T>::insert(&worker, worker_submissions);
+
+		Ok(().into())
+	}
 	
 	}
 

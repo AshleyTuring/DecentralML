@@ -75,6 +75,9 @@ impl pallet_decentralml::Config for Test {
 	type Currency = ();
 	type TaskReward = frame_support::traits::ConstU32<1>;
 	type MinContribution =frame_support::traits::ConstU128<500>;
+	type MaxOpenTasks =frame_support::traits::ConstU32<100>;
+	type MaxSubmissionsPerWorker =frame_support::traits::ConstU32<100>;
+	
 
 }
 

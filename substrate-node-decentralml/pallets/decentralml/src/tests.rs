@@ -1,7 +1,7 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
 
-use crate::{ValidationStrategy,TaskType,StorageType,TaskStatus,TaskInfo,Tasks, TaskResultSubmissionCountByTaskId,TaskResultSubmissionCount,TaskResultSubmissions};
+use crate::{ResultSubmissionStatus, TaskResultSubmission, ValidationStrategy,TaskType,StorageType,TaskStatus,TaskInfo,Tasks, TaskResultSubmissionCountByTaskId,TaskResultSubmissionCount,TaskResultSubmissions};
 use frame_support::BoundedVec;
 
 
@@ -125,6 +125,81 @@ fn assign_task_successfully() {
 
     });
 }
+
+
+
+
+fn create_and_assign_task(task_id: u32, worker_account: u32) {
+    let task_id = 0;
+    let max_assignments = 3;
+    // Create a task
+    let task = TaskInfo {
+        status: TaskStatus::Created,
+        task_type: TaskType::DataAnnotators, // Example task type
+        creator: 1, // Example creator AccountId
+        pays_amount: 1000, // Example pays amount
+        creation_block: 1, // Example creation block number
+        expiration_block: 10, // Example expiration block number
+        max_assignments,
+        validation_strategy: ValidationStrategy::AutoAccept, // Example validation strategy
+        question: Some(vec![1, 2, 3, 4].try_into().unwrap()), // Example question
+        model_contributor_script_path: None,
+        model_contributor_script_storage_type: None,
+        model_contributor_script_storage_credentials: None,
+        annotation_type: None,
+        annotation_media_samples: None,
+        annotation_files: None,
+        annotation_class_labels: None,
+        annotation_class_coordinates: None,
+        annotation_json: None,
+        annotation_files_storage_type: None,
+        annotation_files_storage_credentials: None,
+        model_engineer_path: None,
+        model_engineer_storage_type: None,
+        model_engineer_storage_credentials: None,
+    };
+    Tasks::<Test>::insert(task_id, task);
+
+    // Assign the task
+    let submission = TaskResultSubmission {
+        task_id,
+        submission_id: 0,
+        worker: 1u64,
+        created_block: 1u64,
+        result: None,
+        result_path: None,
+        result_storage_type: None,
+        result_storage_credentials: None,
+        status: ResultSubmissionStatus::Assigned,
+        paid_amount: None,
+        paid_block: None,
+    };
+    let submission_index = TaskResultSubmissionCount::<Test>::get();
+    TaskResultSubmissions::<Test>::insert(submission_index, submission);
+    TaskResultSubmissionCount::<Test>::put(submission_index + 1);
+    TaskResultSubmissionCountByTaskId::<Test>::insert(task_id, 1);
+}
+
+
+
+// #[test]
+// fn send_task_result_success() {
+//     new_test_ext().execute_with(|| {
+//         // Arrange
+//         let worker_account = 1;
+//         let task_id = 0;
+//         create_and_assign_task(task_id, worker_account);
+
+//         // Act
+//         assert_ok!(DecentralMLModule::send_task_result(RuntimeOrigin::signed(1), 0));
+
+//         // Assert
+//         let updated_submission = TaskResultSubmissions::<Test>::get(0).unwrap();
+//         assert_eq!(updated_submission.status, ResultSubmissionStatus::PendingValidation);
+//     });
+// }
+
+// ... other tests ...
 
 
 

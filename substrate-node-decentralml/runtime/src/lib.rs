@@ -274,6 +274,8 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 
 	pub const MinContribution : u128 = 500;
+	pub const MaxOpenTasks : u32 = 10_000_000;
+	pub const MaxSubmissionsPerWorker:u32= 10_000_000;
 }
 
 
@@ -286,6 +288,8 @@ impl pallet_decentralml::Config for Runtime {
 	//type SubmissionDeposit = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
 	
 	type TaskReward = MinContribution;
+	type MaxOpenTasks = MaxOpenTasks;
+	type MaxSubmissionsPerWorker =MaxSubmissionsPerWorker;
 	// type MaxLength = MAX_VALUE;
 	// type MaxFileCount = MAX_FILE_COUNT;
 	// type MaxFilePathLength= MAX_FILE_PATH_LENGTH;
