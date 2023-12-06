@@ -270,8 +270,11 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-const MIN_CONTRIBUTION_VALUE: u128 = 1_000; // Replace with the desired value
-const MAX_VALUE: u32 = 1_000;
+
+parameter_types! {
+
+	pub const MinContribution : u128 = 500;
+}
 
 
 // Configure the pallet-template in pallets/template.
@@ -279,12 +282,15 @@ impl pallet_decentralml::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_decentralml::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
-    type MinContribution =  frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
-	type SubmissionDeposit = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
+    type MinContribution =  MinContribution;
+	//type SubmissionDeposit = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
 	
-	type TaskReward = frame_support::traits::ConstU128<MIN_CONTRIBUTION_VALUE>;
-	type MaxLength = frame_support::traits::ConstU32<MAX_VALUE>;
-	
+	type TaskReward = MinContribution;
+	// type MaxLength = MAX_VALUE;
+	// type MaxFileCount = MAX_FILE_COUNT;
+	// type MaxFilePathLength= MAX_FILE_PATH_LENGTH;
+ 	// type MaxFileCredentialLength= MAX_FILE_CREDENTIAL_LENGTH;
+	// type MaxFileInstructionLength = MAX_FILE_INSTRUCTION_LENGTH;
 }
 
 
@@ -309,8 +315,7 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-		// Include the custom logic from the pallet-template in the runtime.
-		// TemplateModule: pallet_template,
+		// Include the decentralml logic from the pallet-template in the runtime.
 		DecentralMLModule: pallet_decentralml,
 	}
 );

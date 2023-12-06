@@ -73,10 +73,8 @@ impl pallet_decentralml::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type Currency = ();
-	type MinContribution =  frame_support::traits::ConstU32<1>;
-	type SubmissionDeposit = frame_support::traits::ConstU32<1>;
 	type TaskReward = frame_support::traits::ConstU32<1>;
-	type MaxLength = frame_support::traits::ConstU32<1024>;
+	type MinContribution =frame_support::traits::ConstU128<500>;
 
 }
 

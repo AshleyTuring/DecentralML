@@ -35,8 +35,6 @@ pub mod pallet {
 		/// The currency in which the crowdfunds will be denominated
 		type Currency: ReservableCurrency<Self::AccountId>;
 
-		/// The amount to be held on deposit by the owner of a crowdfund
-		type SubmissionDeposit: Get<BalanceOf<Self>>;
 
 		/// The minimum amount that may be contributed into a crowdfund. Should almost certainly be at
 		/// least ExistentialDeposit.
