@@ -32,6 +32,7 @@ This is the DecentralML pallet implementation.
 ### Run
 
 First, complete the [basic Rust setup instructions](https://docs.substrate.io/install/).
+Switch into the "substrate-node-decentralml" folder if you are not already
 Use Rust's native `cargo` command to build and launch the DecentralML pallet:
 
 ```sh
@@ -84,7 +85,7 @@ RUST_BACKTRACE=1 ./target/release/decentralml -ldebug --dev
 
 > Development chain means that the state of our chain will be in a tmp folder while the nodes are
 > running. Also, **alice** account will be authority and sudo account as declared in the
-> [genesis state](https://github.com/AdMetaNetwork/admeta/blob/main/node/src/chain_spec.rs#L52).
+> [genesis state](https://github.com/livetreetech/DecentralML/blob/main/substrate-node-decentralml/runtime/src/lib.rs).
 > At the same time the following accounts will be pre-funded:
 >
 > - Alice
@@ -102,7 +103,7 @@ is ran. The following commands shows how to use a newly created folder as our db
 $ mkdir my-chain-state
 
 // Use of that folder to store the chain state
-$ ./target/release/admeta --dev --base-path ./my-chain-state/
+$ ./target/release/node-decentralml --dev --base-path ./my-chain-state/
 
 // Check the folder structure created inside the base path after running the chain
 $ ls ./my-chain-state
@@ -115,28 +116,24 @@ db keystore network
 
 ### Connect with Polkadot-JS Apps Front-end
 
-Once the AdMeta node is running locally, you can connect it with **Polkadot-JS Apps** front-end to
+Once the DecentralML node is running locally, you can connect it with **Polkadot-JS Apps** front-end to
 interact with your chain. [Click
 here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connecting the Apps to your
-local AdMeta node.
+local DecentralML node.
 
-### Run in Docker
+### Unit Test
 
-First, install [Docker](https://docs.docker.com/get-docker/) and
-[Docker Compose](https://docs.docker.com/compose/install/).
+Run `cargo test` command to build and launch all unit tests. The unit tests will stop if all tests
+pass or any of them fails.
 
-Then run the following command to start a single node development chain.
-
-```bash
-./scripts/docker_run.sh
+```sh
+cargo test
 ```
 
-This command will firstly compile your code, followed by the whole unit test run, and then start a
-local development network.
 
 ## Python Client
 
-decentralml_client.py script allows interaction with Substrate node and custom pallets.
+There are several python scripts that correlate to create_task, assign_task, send_task_result, validate_task_result, accept_task_result, reject_task_result, list_tasks, list_task_results which allows interaction with Substrate DecentralML node and custom pallets.
 
 It exposes and provides methods to communicate to fund actors involved and execute several tasks on the node.
 
@@ -165,28 +162,34 @@ pip install substrate-interface
 - To execute the client script, run the following command:
 
 ```bash
-python decentralml_client.py
+python create_task.py
 ```
 
-Please refer to the [Substrate documentation](https://pypi.org/project/substrate-interface/1.4.1/)
+Please refer to the [python substrate interface documentation](https://pypi.org/project/substrate-interface/1.4.1/)
 for API reference documentation
 
-## Test
 
-### Unit Test
 
-Run `cargo test` command to build and launch all unit tests. The unit tests will stop if all tests
-pass or any of them fails.
+## Run in Docker
 
-```sh
-cargo test
+First, install [Docker](https://docs.docker.com/get-docker/) and
+[Docker Compose](https://docs.docker.com/compose/install/).
+
+Then run the following command to start a single node development chain.
+
+```bash
+./scripts/docker_run.sh
 ```
 
-### Test with WebApp
+This command will firstly compile your code, followed by the whole unit test run, and then start a
+local development network.
 
-Please see the [AdMeta WebApp guide](https://docs.admeta.network/guides/how-to-use-admeta-webapp)
-about how to test using AdMeta WebApp to interact with AdMeta Testnet.
+
+
+
+
+
 
 ## License
 
-GPLv3
+[Apache 2.0 License](https://github.com/livetreetech/DecentralML/blob/main/LICENSE)
