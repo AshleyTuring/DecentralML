@@ -1,7 +1,7 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
 
-use crate::{ValidationStrategy,TaskType,StorageType};
+use crate::{ValidationStrategy,TaskType,StorageType,TaskStatus,TaskInfo,Tasks, TaskResultSubmissionCountByTaskId,TaskResultSubmissionCount,TaskResultSubmissions};
 use frame_support::BoundedVec;
 
 
@@ -75,6 +75,59 @@ fn create_task_works() {
 
     });
 }
+
+
+#[test]
+fn assign_task_successfully() {
+    new_test_ext().execute_with(|| {
+        // Arrange: Create a task with a certain ID and maximum assignments
+        let task_id = 1;
+        let max_assignments = 3;
+        let task = TaskInfo {
+            status: TaskStatus::Created,
+            task_type: TaskType::DataAnnotators, // Example task type
+            creator: 1, // Example creator AccountId
+            pays_amount: 1000, // Example pays amount
+            creation_block: 1, // Example creation block number
+            expiration_block: 10, // Example expiration block number
+            max_assignments,
+            validation_strategy: ValidationStrategy::AutoAccept, // Example validation strategy
+            question: Some(vec![1, 2, 3, 4].try_into().unwrap()), // Example question
+            model_contributor_script_path: None,
+            model_contributor_script_storage_type: None,
+            model_contributor_script_storage_credentials: None,
+            annotation_type: None,
+            annotation_media_samples: None,
+            annotation_files: None,
+            annotation_class_labels: None,
+            annotation_class_coordinates: None,
+            annotation_json: None,
+            annotation_files_storage_type: None,
+            annotation_files_storage_credentials: None,
+            model_engineer_path: None,
+            model_engineer_storage_type: None,
+            model_engineer_storage_credentials: None,
+        };
+        Tasks::<Test>::insert(task_id, task);
+
+        // Act: Assign the task
+        assert_ok!(DecentralMLModule::assign_task(RuntimeOrigin::signed(1), task_id));
+
+        // Assert: Check that the task result submission count increased
+        let submission_count = TaskResultSubmissionCountByTaskId::<Test>::get(task_id).unwrap();
+        assert_eq!(submission_count, 1);
+
+        // Assert: Check that the task result submission is stored correctly
+        let submission_index = TaskResultSubmissionCount::<Test>::get();
+        let submission = TaskResultSubmissions::<Test>::get(submission_index-1).unwrap();
+        assert_eq!(submission.task_id, task_id);
+        assert_eq!(submission.worker, 1);
+
+    });
+}
+
+
+
 // #[test]
 // fn create_task_works() {
 //     new_test_ext().execute_with(|| {

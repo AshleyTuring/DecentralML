@@ -1,8 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
 
 #[cfg(test)]
@@ -75,11 +72,12 @@ pub mod pallet {
 	}
 
 	pub type TaskIndex = u32;
-	type TaskInfoOf<T> = TaskInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>; // <T as pallet::Config>::MaxQuestionLength>;
+	pub type TaskResultSubmissionIndex = u32;
+
+	type TaskResultSubmissionOf<T> = TaskResultSubmission<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>; 
+	type TaskInfoOf<T> = TaskInfo<AccountIdOf<T>, BalanceOf<T>, BlockNumberFor<T>>; 
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-
-
 
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug)]
 	pub enum ValidationStrategy {
@@ -99,7 +97,6 @@ pub mod pallet {
 		Azure,
 	}
 
-
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug)]
 	pub enum AnnotationType {
 		#[default]
@@ -118,6 +115,7 @@ pub mod pallet {
 	#[derive(Clone, Encode, Default, Decode, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug)]
 	pub enum ResultSubmissionStatus {
 		#[default]
+		Assigned,
 		PendingValidation,
 		Validated,
 		Accepted,
@@ -139,32 +137,6 @@ pub mod pallet {
 		Withdrawn,
 	}
 
-
-	// pub type FileInfoOf<T> = FileInfo<T> ;
-	// pub type FileInfoListsOf<T> = BoundedVec<FileInfoOf<T>, <T as pallet::Config>::MaxFileCount>;
-		
-
-	// pub struct FileInfo<T: pallet::Config> {
-	// 	pub file_path: BoundedVec<u8, <T as pallet::Config>::MaxFilePathLength>,
-	// 	pub file_credentials: BoundedVec<u8, <T as pallet::Config>::MaxFileCredentialLength>,
-	// 	pub file_instructions: BoundedVec<u8, <T as pallet::Config>::MaxFileInstructionLength>,
-	// //		pub file_type: FileType,
-	// //		pub storage_type: StorageType,
-	// }
-
-
-
-	// #[derive(Clone, Encode, Decode, Eq, PartialEq, TypeInfo, MaxEncodedLen)]
-	// #[scale_info(skip_type_params(T))]
-	// #[codec(mel_bound(T: pallet::Config))]
-	// #[derive(frame_support::DebugNoBound)]
-	// #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-
-	// #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
-	// #[scale_info(skip_type_params(T))]
-	// #[codec(mel_bound())]
-	// //#[cfg_attr(feature = "std", derive(Debug))]
-
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 	#[cfg_attr(feature = "std", derive(Debug))]
 	pub struct TaskResultSubmission<AccountId, Balance, BlockNumber> 
@@ -172,13 +144,10 @@ pub mod pallet {
 
 		/// the task id note there is a 1 to many relationship between tasks and submissions
 		pub task_id: u32,
-
 		/// the worker that submitted the task
 		pub worker: AccountId,
-		
 		/// the block the task was created
 		pub created_block: BlockNumber,
-		
 		/// optional send result as a string if possiblw
 		pub result: Option<BoundedVec<u8,ConstU32<1024>>>,// string
 		/// path to weights / id / or annotator results
@@ -279,6 +248,49 @@ pub mod pallet {
 	
 
 
+	#[pallet::storage]
+	#[pallet::getter(fn taskresultsubmissions)]
+	/// Info on all of the task result submissions.
+	pub(super) type TaskResultSubmissions<T: Config> = StorageMap
+	<	_, 
+		Blake2_128Concat, 
+		TaskResultSubmissionIndex, 
+		TaskResultSubmissionOf<T>,
+		OptionQuery,
+	>;
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn taskresultsubmission_count)]
+	/// The total number of tasks result submissions for a task index.
+	pub(super) type TaskResultSubmissionCount<T: Config> = StorageValue<_, TaskResultSubmissionIndex, ValueQuery>;
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn taskresultsubmission_count_by_taskid)]
+	/// The total number of tasks result submissions that have been allocated to a task id
+	pub(super) type TaskResultSubmissionCountByTaskId<T: Config> = StorageMap
+	<	
+	_, 
+	Blake2_128Concat, 
+	TaskIndex, 
+	u32,
+	OptionQuery,
+	>;
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn taskresultsubmission_ids_by_taskid)]
+	/// The total number of tasks result submissions that have so far been allocated.
+	pub(super) type TaskResultSubmissionIds<T: Config> = StorageMap
+	<	
+	_, 
+	Blake2_128Concat, 
+	TaskIndex, 
+	[u32; 1000],
+	OptionQuery,
+	>;
+
 
 
 	#[pallet::storage]
@@ -306,8 +318,16 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 	
-
+		/// The task was created
 		TaskCreated{ taskid: TaskIndex, created: BlockNumberFor<T>},
+		/// The task was assigned to a worker.
+		TaskAssigned {
+			task_id: TaskIndex,
+			submission_index: TaskResultSubmissionIndex,
+			modified_block: BlockNumberFor<T>,
+		},
+
+
 		TaskInprogress(TaskIndex, BlockNumberFor<T>),
 		TaskCompleted(TaskIndex, BlockNumberFor<T>),
 		TaskRejected(TaskIndex, BlockNumberFor<T>),
@@ -352,7 +372,12 @@ pub mod pallet {
 		/// need to have at least 1 character in the question otherwise it's an invalid task
 		InvalidQuestion,
 		/// Invalid task type Model Engineer, 
-		InvalidTaskType
+		InvalidTaskType,
+		/// The specified task does not exist.
+		TaskNotFound,
+		/// The task has reached its maximum number of assignments.
+		MaxAssignmentsReached,
+
 
 	}
 
@@ -368,7 +393,57 @@ pub mod pallet {
 
 
 
-	/// Create a new task
+	/// Creates a new task with specified parameters.
+	///
+	/// This function allows a user to create a new task with various parameters. It performs necessary
+	/// validations, including checks for the payment amount, expiration block, and task-specific
+	/// parameters based on the task type. Upon successful creation, it updates the task count, stores
+	/// the task info in storage, and emits a creation event.
+	///
+	/// # Parameters
+	/// - `origin`: The origin of the call, which must be a signed account. This is typically the task creator.
+	/// - `task_type`: Specifies the type of the task, e.g., DataAnnotators, ModelContributor, ModelEngineer.
+	/// - `question`: A detailed description or question related to the task. It is an optional parameter and
+	///   should be provided as a bounded vector of bytes.
+	/// - `pays_amount`: The amount of currency to be paid for completing the task. It should be a balance type.
+	/// - `expiration_block`: The block number at which the task expires.
+	/// - `max_assignments`: Maximum number of assignments for the task. This limits how many workers can be assigned.
+	/// - `validation_strategy`: Strategy for validating the task results, e.g., AutoAccept, ManualAccept, CustomAccept.
+	/// - `model_contributor_script_path`: For ModelContributor tasks, the path to the script to be executed. It is optional.
+	/// - `model_contributor_script_storage_type`: Storage type for the script, e.g., IPFS, S3. It is optional.
+	/// - `model_contributor_script_storage_credentials`: Credentials for accessing the script storage. Optional and a bounded vector of bytes.
+	/// - `annotation_type`: For DataAnnotators tasks, the type of annotation required, e.g., Image, Audio. It is optional.
+	/// - `annotation_media_samples`: Path to annotation media samples. It is a bounded vector of bounded vectors of bytes. Optional.
+	/// - `annotation_files`: List of file names for annotation samples. It is a bounded vector of bounded vectors of bytes. Optional.
+	/// - `annotation_class_labels`: Class labels for annotation samples. Optional and a bounded vector of bytes.
+	/// - `annotation_class_coordinates`: Coordinates for class labels in annotation samples. Optional and a bounded vector of bytes.
+	/// - `annotation_json`: Additional structured JSON data for the task. Optional and a bounded vector of bytes.
+	/// - `annotation_files_storage_type`: Storage type for annotation files, e.g., IPFS, S3. Optional.
+	/// - `annotation_files_storage_credentials`: Credentials for accessing annotation file storage. Optional and a bounded vector of bytes.
+	/// - `model_engineer_path`: For ModelEngineer tasks, the path to the model. Optional and a bounded vector of bytes.
+	/// - `model_engineer_storage_type`: Storage type for the model, e.g., IPFS, S3. Optional.
+	/// - `model_engineer_storage_credentials`: Credentials for accessing the model storage. Optional and a bounded vector of bytes.
+
+	/// # Errors
+	/// Returns an error if any validation fails, including invalid payment amount, premature expiration 
+	/// block, missing required parameters based on task type, etc.
+
+	/// # Events
+	/// Emits `TaskCreated` event on successful task creation.
+
+	/// # Example
+	/// ```
+	/// Pallet::create_task(
+	///     Origin::signed(creator_account),
+	///     TaskType::ModelContributor,
+	///     Some(question),
+	///     pays_amount,
+	///     expiration_block,
+	///     max_assignments,
+	///     ValidationStrategy::AutoAccept,
+	///     ... // other parameters
+	/// )?;
+	/// ```
 	#[pallet::call_index(0)]
 	#[pallet::weight(10_000)]
 	pub fn create_task(
@@ -497,6 +572,87 @@ pub mod pallet {
 		Ok(().into())
 	}
 	
+	/// Assigns a task to a worker.
+	///
+	/// This function is called to assign an existing task, identified by `task_id`, to a worker. 
+	/// The function verifies that the task exists and has not exceeded its maximum number of assignments.
+	/// On successful assignment, it increments the task result submission count, creates a new 
+	/// `TaskResultSubmission` struct with the assigned worker and current block number, and updates 
+	/// relevant storage items. The function emits an event upon successful assignment.
+	///
+	/// # Parameters
+	/// - `origin`: The origin of the call, which must be a signed account.
+	/// - `task_id`: The index of the task to be assigned.
+	///
+	/// # Errors
+	/// Returns an error if the task does not exist, has reached its maximum number of assignments,
+	/// or any other condition for a valid assignment is not met.
+	///
+	/// # Events
+	/// Emits `TaskAssigned` event on successful assignment.
+	///
+	/// # Example
+	/// ```
+	/// Pallet::assign_task(Origin::signed(worker_account), task_id)?;
+	/// ```
+	 #[pallet::call_index(1)]
+	 #[pallet::weight(10_000)]
+	 pub fn assign_task(origin: OriginFor<T>, task_id: TaskIndex) -> DispatchResultWithPostInfo {
+        let worker = ensure_signed(origin)?;
+
+        // Retrieve and validate the task
+        let task = Tasks::<T>::get(task_id).ok_or(Error::<T>::TaskNotFound)?;
+        
+        // Retrieve the current count of result submissions for the given task
+        let mut submission_count = TaskResultSubmissionCountByTaskId::<T>::get(task_id).unwrap_or(0);
+
+        // Ensure the task has not exceeded its maximum number of assignments
+        ensure!(submission_count < task.max_assignments, Error::<T>::MaxAssignmentsReached);
+
+        // Increment the submission count
+        submission_count = submission_count.checked_add(1).ok_or(Error::<T>::Overflow)?;
+
+        // Update the task submission count in storage
+        TaskResultSubmissionCountByTaskId::<T>::insert(task_id, submission_count);
+
+        // Generate a unique index for the new task result submission
+        let submission_index = TaskResultSubmissionCount::<T>::get();
+        TaskResultSubmissionCount::<T>::put(submission_index.checked_add(1).ok_or(Error::<T>::Overflow)?);
+
+		let creation_block = frame_system::Pallet::<T>::block_number();
+	
+        // Create a new TaskResultSubmission
+        let new_submission = TaskResultSubmission {
+            task_id,
+            worker: worker.clone(),
+            created_block: creation_block,
+            result: None,
+            result_path: None,
+            result_storage_type: None,
+            result_storage_credentials: None,
+            status: ResultSubmissionStatus::Assigned,
+            paid_amount: None,
+            paid_block: None,
+        };
+
+        // Save the new submission in storage
+        TaskResultSubmissions::<T>::insert(submission_index, new_submission);
+
+        // Update the task submission IDs
+        let mut submission_ids = TaskResultSubmissionIds::<T>::get(task_id).unwrap_or([0; 1000]);
+        submission_ids[submission_count as usize] = submission_index;
+        TaskResultSubmissionIds::<T>::insert(task_id, submission_ids);
+
+        // Emit an event
+        Self::deposit_event(Event::TaskAssigned {
+            task_id,
+            submission_index,
+            modified_block:creation_block,
+        });
+
+        Ok(().into())
+    }
+
 	
 	}
 
