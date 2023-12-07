@@ -26,3 +26,4 @@ substrate-front-end-template
 .idea/workspace.xml
 substrate-client-decentralml/__pycache__/utilities.cpython-311.pyc
 substrate-node-template/Cargo.lock
+substrate-client-decentralml/__pycache__/storage_ipfs.cpython-311.pyc

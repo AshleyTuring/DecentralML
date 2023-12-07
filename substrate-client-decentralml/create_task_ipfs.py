@@ -1,6 +1,8 @@
 from substrateinterface import SubstrateInterface, Keypair
 from substrateinterface.exceptions import SubstrateRequestException
 import binascii
+import os
+from storage_ipfs import upload_files_to_ipfs
 
 # Constants
 SOCKET_URL = "ws://127.0.0.1:9944"
@@ -236,8 +238,20 @@ def create_task_model_contributor(expiration_block, substrate, sudoaccount, pass
         print(f"create_task_model_contributor Failed to send extrinsic: {e}")
 
 def main():
+
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Assuming no passphrase is provided uses Alice
+
+    # Upload asets to IPFS
+    working_directory = os.getcwd()
+    assets_directory = os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
+    assets = os.listdir(assets_directory)
+    asset_ipfs_ids = {}
+
+    for asset in assets:
+        asset_params = {f'{asset}': f'./assets/{asset}'}
+        asset_ipfs_id = upload_files_to_ipfs(asset_params)
+        asset_ipfs_ids[asset] = asset_ipfs_id
 
     # Common parameters for all tasks
     task_type = "ModelContributor"
@@ -248,14 +262,14 @@ def main():
     expiration_block = 100
 
     # Model Contributor specific parameters
-    model_contributor_script_path = "QmeaXFDrJJdZsQo7SYMP2GBoX83Ee2sx5XNQHA5vBXP2uB"
+    model_contributor_script_path = asset_ipfs_ids['model_contributor_script.py'][0]
     model_contributor_script_storage_type = "IPFS"
     model_contributor_script_storage_credentials = "ipfs_access_credentials"
 
     # Data Annotator specific parameters
     annotation_type = "Image"
-    annotation_media_samples = ["QmeLf6QXM5AZngDaaBARN3JavpKdQmc4SgV89LUd93hBbg", "QmafZQ5WubBn5UANPYVvv7XUfBR2kP6rtLJtmBaxYseupi"]
-    annotation_files = ["QmNzH7YAjr4VYsVXqJLJrjdC94rs5s487R15rXfMJtc3E7", "QmWHGj31VYv1gJvNdss5QATQkHeck2EgBg85QixkU7aKFF"]
+    annotation_media_samples = [asset_ipfs_ids['fox_nft.jpeg'][0], asset_ipfs_ids['ai.jpeg'][0]]
+    annotation_files = [asset_ipfs_ids['brain_cells.jpeg'][0], asset_ipfs_ids['deep_learning.jpeg'][0]]
     annotation_class_labels = "Label1,Label2"
     annotation_class_coordinates = "0,0,10,10"
     annotation_json = "{\"key\": \"value\"}"
@@ -263,7 +277,7 @@ def main():
     annotation_files_storage_credentials = "s3_access_credentials"
 
     # Model Engineer specific parameters
-    model_engineer_path = "QmauWpePXRSqWpvi1n9D3QA7vyZvsAvVSbVv6anAvrAahQ"
+    model_engineer_path = asset_ipfs_ids['engineer_model.bin'][0]
     model_engineer_storage_type = "GCP"
     model_engineer_storage_credentials = "gcp_access_credentials"
 
