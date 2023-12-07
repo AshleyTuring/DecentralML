@@ -3,6 +3,7 @@ from substrateinterface.exceptions import SubstrateRequestException
 import binascii
 import os
 from storage_ipfs import upload_files_to_ipfs
+from utilities import get_files_from_folder
 
 # Constants
 SOCKET_URL = "ws://127.0.0.1:9944"
@@ -40,7 +41,45 @@ def get_annotation_type_dict(annotation_type):
         'Video': 3,
     }.get(annotation_type, 0)}  # Default to Image
 
+def get_annotation_files_ids():
 
+    assets_directory = get_assets_directory()
+    annotation_files = get_files_from_folder(os.path.join(assets_directory, 'annotation_files'))
+    return upload_files(annotation_files)
+
+def get_annotation_samples_ids():
+    
+    assets_directory = get_assets_directory()
+    annotation_samples = get_files_from_folder(os.path.join(assets_directory, 'annotation_samples'))
+    return upload_files(annotation_samples)
+
+def get_model_contributor_script_id():
+
+    assets_directory = get_assets_directory()
+    model_contributor_scripts = get_files_from_folder(os.path.join(assets_directory,'model_contributor'))
+    return upload_files(model_contributor_scripts)[0] # We assume we only have one model contributor script for simplicity
+
+def get_model_engineer_model_id():
+    
+    assets_directory = get_assets_directory()
+    engineer_models = get_files_from_folder(os.path.join(assets_directory, 'model_engineer'))
+    return upload_files(engineer_models)[0] # We assume we only have one engineer model for simplicity
+
+def upload_files(files):
+    
+    ipfs_ids = []
+
+    for file in files:
+        params = {f'file': file}
+        asset_ipfs_id = upload_files_to_ipfs(params)
+        ipfs_ids.append(asset_ipfs_id)
+
+    return ipfs_ids
+
+def get_assets_directory():
+    
+    working_directory = os.getcwd()
+    return os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
 
 def create_task_data_annotator(expiration_block, substrate, sudoaccount, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials):
     """
@@ -242,16 +281,11 @@ def main():
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Assuming no passphrase is provided uses Alice
 
-    # Upload asets to IPFS
-    working_directory = os.getcwd()
-    assets_directory = os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
-    assets = os.listdir(assets_directory)
-    asset_ipfs_ids = {}
-
-    for asset in assets:
-        asset_params = {f'{asset}': f'./assets/{asset}'}
-        asset_ipfs_id = upload_files_to_ipfs(asset_params)
-        asset_ipfs_ids[asset] = asset_ipfs_id
+    # Upload assets to IPFS
+    annotation_files_ids = get_annotation_files_ids()
+    annotation_samples_ids = get_annotation_samples_ids()
+    model_contributor_script_path = get_model_contributor_script_id()
+    model_engineer_path = get_model_engineer_model_id()
 
     # Common parameters for all tasks
     task_type = "ModelContributor"
@@ -262,14 +296,14 @@ def main():
     expiration_block = 100
 
     # Model Contributor specific parameters
-    model_contributor_script_path = asset_ipfs_ids['model_contributor_script.py'][0]
+    model_contributor_script_path = model_contributor_script_path
     model_contributor_script_storage_type = "IPFS"
     model_contributor_script_storage_credentials = "ipfs_access_credentials"
 
     # Data Annotator specific parameters
     annotation_type = "Image"
-    annotation_media_samples = [asset_ipfs_ids['fox_nft.jpeg'][0], asset_ipfs_ids['ai.jpeg'][0]]
-    annotation_files = [asset_ipfs_ids['brain_cells.jpeg'][0], asset_ipfs_ids['deep_learning.jpeg'][0]]
+    annotation_media_samples = annotation_samples_ids
+    annotation_files = annotation_files_ids
     annotation_class_labels = "Label1,Label2"
     annotation_class_coordinates = "0,0,10,10"
     annotation_json = "{\"key\": \"value\"}"
@@ -277,7 +311,7 @@ def main():
     annotation_files_storage_credentials = "s3_access_credentials"
 
     # Model Engineer specific parameters
-    model_engineer_path = asset_ipfs_ids['engineer_model.bin'][0]
+    model_engineer_path = model_engineer_path
     model_engineer_storage_type = "GCP"
     model_engineer_storage_credentials = "gcp_access_credentials"
 

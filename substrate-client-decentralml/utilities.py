@@ -1,3 +1,5 @@
+import os
+
 def remove_characters(input_string, characters_to_remove):
     for char in characters_to_remove:
         input_string = input_string.replace(char, '')
@@ -23,3 +25,13 @@ def get_substring(input_string, start_index, end_index):
     # Use slicing to extract the substring
     substring = input_string[start_index:end_index]
     return substring
+
+def get_files_from_folder(folder_path):
+
+    files = os.listdir(folder_path)
+    file_paths = []
+
+    for file in files:
+        file_paths.append(os.path.join(folder_path, file))
+
+    return file_paths

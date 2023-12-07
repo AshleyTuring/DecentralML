@@ -18,23 +18,15 @@ PATH_TO_DECENTRALML_CONFIG = ''
 
 def upload_files_to_ipfs(files):
 
-    # files is passed as a dictionary of key (identifier) / file (filename)
-
     response = requests.post(f'{END_POINT}/api/v0/add', files=files, auth=(API_KEY, API_KEY_SECRET))
     hash_values = response.text.split("\n")
-    hash_ids = []
+    hash_value = hash_values[0]
 
-    for hash_value in hash_values:
-
-        if len(hash_value) > 1:
-            hash_part = hash_value.split(',')
-            hash_part_without_quotes = remove_characters(hash_part[1], '""')
-            hash_colon_string_index_position = find_character_position(hash_part_without_quotes, HASH_COLON)
-            hash_id = get_substring(hash_part_without_quotes, hash_colon_string_index_position + len(HASH_COLON), len(hash_part_without_quotes))
-
-            hash_ids.append(hash_id)
-
-    return hash_ids
+    if len(hash_value) > 1:
+        hash_part = hash_value.split(',')
+        hash_part_without_quotes = remove_characters(hash_part[1], '""')
+        hash_colon_string_index_position = find_character_position(hash_part_without_quotes, HASH_COLON)
+        return get_substring(hash_part_without_quotes, hash_colon_string_index_position + len(HASH_COLON), len(hash_part_without_quotes))
 
 
 def retrieve_files_from_ipfs(hash_ids):
