@@ -12,7 +12,7 @@ RUN cargo build --package node-decentralml --release
 
 FROM --platform=$BUILDPLATFORM ubuntu:22.04
 
-ARG NB_USER="model_creator"
+ARG NB_USER="decentralml"
 ARG NB_UID="1000"
 ARG NB_GID="100"
 ARG TARGETPLATFORM
@@ -26,7 +26,6 @@ RUN \
     echo "${NB_USER}    ALL=(ALL)    NOPASSWD:    ALL" >> /etc/sudoers
 
 RUN apt-get install -y python3 python3-pip
-RUN pip install substrate-interface
 
 RUN mkdir -p /decentralml
 RUN chown root:root /decentralml
@@ -34,6 +33,7 @@ RUN chown root:root /decentralml
 COPY --from=build /decentralml/substrate-node-decentralml/target/release/node-decentralml /decentralml/node-decentralml
 COPY --from=build /decentralml/substrate-client-decentralml /decentralml/substrate-client-decentralml
 
+RUN pip install -r /decentralml/substrate-client-decentralml/requirements.txt
 
 ENV SHELL=/bin/bash
 
