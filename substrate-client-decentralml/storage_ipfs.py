@@ -1,8 +1,8 @@
 import requests
-from utilities import find_character_position
-from utilities import get_substring
-from utilities import remove_spaces
-from utilities import remove_characters
+from .utilities import find_character_position
+from .utilities import get_substring
+from .utilities import remove_spaces
+from .utilities import remove_characters
 
 API_KEY = "2YBXx5wpHlPPOrL91T8VwedHdz7"
 API_KEY_SECRET = "497193a34170a89435eb4d9582dab729"
