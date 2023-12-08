@@ -5,7 +5,7 @@ import os
 from .storage_ipfs import upload_files_to_ipfs
 from .utilities import get_files_from_folder
 
-from .settings import ASSETS_FOLDER
+from .settings import ASSETS_FOLDER, SOCKET_URL
 
 
 # Helper Functions
