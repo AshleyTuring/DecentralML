@@ -6,7 +6,7 @@ from storage_ipfs import upload_files_to_ipfs
 from utilities import get_files_from_folder
 
 # Constants
-SOCKET_URL = "ws://127.0.0.1:9944"
+SOCKET_URL = "ws://node_decentral:9944"
 
 # Helper Functions
 def get_validation_strategy_dict(strategy):
