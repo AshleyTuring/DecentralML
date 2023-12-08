@@ -17,6 +17,7 @@ The build scripts work on Unix system, which means any Linux distribution, MacOS
 - Build the docker image for the node of DecentralML
 
     ```./build_node.sh```
+    
 - Build the docker image for the python client of DecentralML
 
     ```./build_client.sh```
@@ -29,11 +30,22 @@ To run the node and client, use the provided `docker-compose.yml` file provided 
 
 ```docker compose up```
 
+> **_NOTE:_**  Make sure you have a folder called `assets` within a folder called `DecentralML` in your home folder, as it is used by the client to upload files for the tasks.
+
 Now you can open a second terminal and attach a shell to the client container using the command:
 
 ```docker attach client_decentralml```
 
 From this shell, you can use the python scripts in the folder `/decentralml/substrate-client-decentralml` to interact with the chain.
+
+## Example
+
+After you attached a new shell to the `client_decentral` container, you can test the connection and the creation of tasks with the following commands:
+```
+cd /decentralml/
+python3 -m substrate-client-decentralml.create_task_ipfs
+```
+
 
 
 
