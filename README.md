@@ -178,17 +178,7 @@ for API reference documentation
 
 ## Run in Docker
 
-First, install [Docker](https://docs.docker.com/get-docker/) and
-[Docker Compose](https://docs.docker.com/compose/install/).
-
-Then run the following command to start a single node development chain.
-
-```bash
-./scripts/docker_run.sh
-```
-
-This command will firstly compile your code, followed by the whole unit test run, and then start a
-local development network.
+Follow the instructions [here](https://github.com/livetreetech/DecentralML/blob/main/docker/README.md)
 
 ## License
 
