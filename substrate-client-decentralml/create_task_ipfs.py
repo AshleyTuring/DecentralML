@@ -2,11 +2,11 @@ from substrateinterface import SubstrateInterface, Keypair
 from substrateinterface.exceptions import SubstrateRequestException
 import binascii
 import os
-from storage_ipfs import upload_files_to_ipfs
-from utilities import get_files_from_folder
+from .storage_ipfs import upload_files_to_ipfs
+from .utilities import get_files_from_folder
 
-# Constants
-SOCKET_URL = "ws://node_decentral:9944"
+from .settings import ASSETS_FOLDER
+
 
 # Helper Functions
 def get_validation_strategy_dict(strategy):
@@ -43,25 +43,25 @@ def get_annotation_type_dict(annotation_type):
 
 def get_annotation_files_ids():
 
-    assets_directory = get_assets_directory()
+    assets_directory = ASSETS_FOLDER
     annotation_files = get_files_from_folder(os.path.join(assets_directory, 'annotation_files'))
     return upload_files(annotation_files)
 
 def get_annotation_samples_ids():
     
-    assets_directory = get_assets_directory()
+    assets_directory = ASSETS_FOLDER
     annotation_samples = get_files_from_folder(os.path.join(assets_directory, 'annotation_samples'))
     return upload_files(annotation_samples)
 
 def get_model_contributor_script_id():
 
-    assets_directory = get_assets_directory()
+    assets_directory = ASSETS_FOLDER
     model_contributor_scripts = get_files_from_folder(os.path.join(assets_directory,'model_contributor'))
     return upload_files(model_contributor_scripts)[0] # We assume we only have one model contributor script for simplicity
 
 def get_model_engineer_model_id():
     
-    assets_directory = get_assets_directory()
+    assets_directory = ASSETS_FOLDER
     engineer_models = get_files_from_folder(os.path.join(assets_directory, 'model_engineer'))
     return upload_files(engineer_models)[0] # We assume we only have one engineer model for simplicity
 
@@ -75,11 +75,6 @@ def upload_files(files):
         ipfs_ids.append(asset_ipfs_id)
 
     return ipfs_ids
-
-def get_assets_directory():
-    
-    working_directory = os.getcwd()
-    return os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
 
 def create_task_data_annotator(expiration_block, substrate, sudoaccount, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials):
     """
