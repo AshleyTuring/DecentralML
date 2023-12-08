@@ -130,7 +130,6 @@ pass or any of them fails.
 cargo test
 ```
 
-
 ## Python Client
 
 There are several python scripts that correlate to create_task, assign_task, send_task_result, validate_task_result, accept_task_result, reject_task_result, list_tasks, list_task_results which allows interaction with Substrate DecentralML node and custom pallets.
@@ -168,7 +167,14 @@ python create_task.py
 Please refer to the [python substrate interface documentation](https://pypi.org/project/substrate-interface/1.4.1/)
 for API reference documentation
 
+## Storage of assets
 
+Infura (IPFS storage type) is used to upload and retrieve assets that tasks will use to execute their work from the Python client.
+
+These assets pertain to files and data the different actors need to fulfill their role.
+
+Please refer to the [Infura Documentation](https://docs.infura.io/)
+for API reference documentation
 
 ## Run in Docker
 
@@ -183,12 +189,6 @@ Then run the following command to start a single node development chain.
 
 This command will firstly compile your code, followed by the whole unit test run, and then start a
 local development network.
-
-
-
-
-
-
 
 ## License
 
