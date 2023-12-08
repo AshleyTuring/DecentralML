@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  node_decentral:
+    image: decentralml_node:latest
+    container_name: node_decentralml
+    ports:
+      - 9944:9944
+      - 9615:9615
+  client_decentral:
+    image: decentralml_client:latest
+    container_name: client_decentralml
+    links:
+      - "node_decentral:node"
+    stdin_open: true 
+    tty: true
