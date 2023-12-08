@@ -35,9 +35,6 @@ RUN mkdir -p /decentralml/assets
 RUN chown root:root /decentralml/assets
 
 COPY --from=build /tmp/substrate-client-decentralml /decentralml/substrate-client-decentralml
-COPY launch_node.sh /decentralml/launch_node.sh
-RUN chmod +x /decentralml/launch_node.sh
-
 RUN pip install -r /decentralml/substrate-client-decentralml/requirements.txt
 
 ENV SHELL=/bin/bash
