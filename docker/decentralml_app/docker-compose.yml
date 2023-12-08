@@ -13,8 +13,8 @@ services:
     volumes:
       - $HOME/DecentralML/assets/:/decentralml/assets
     environment:
-      - SOCKET_URL="ws://node_decentral:9944"
-      - ASSETS_FOLDER="/decentralml/assets/"
+      - SOCKET_URL=ws://node_decentral:9944
+      - ASSETS_FOLDER=/decentralml/assets/
     links:
       - "node_decentral:node"
     stdin_open: true 
