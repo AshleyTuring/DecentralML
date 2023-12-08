@@ -159,9 +159,9 @@ pub mod pallet {
 		/// the block the task was created
 		pub created_block: BlockNumber,
 		/// optional send result as a string if possiblw
-		pub result: Option<BoundedVec<u8,ConstU32<1024>>>,// string
+		pub result: Option<BoundedVec<u8,ConstU32<2048>>>,// string
 		/// path to weights / id / or annotator results
-		pub result_path: Option<BoundedVec<u8,ConstU32<1024>>>,
+		pub result_path: Option<BoundedVec<u8,ConstU32<512>>>,
 		/// this is where the weights  will be stored e.g. IPFS, S3, GCP, Azure, etc
 		pub result_storage_type: Option<StorageType>,
 		/// credentials to access the weights
@@ -257,7 +257,9 @@ pub mod pallet {
 	}
 	
 
-	// Storage map to hold worker and their task result submissions
+	/// Stores a mapping of workers to their task result submissions.
+	/// Each worker is associated with a bounded vector of task result submission indices.
+	/// This storage helps track all the tasks a particular worker has been involved in.
 	#[pallet::storage]
 	#[pallet::getter(fn worker_submissions)]
 	pub(super) type WorkerSubmissions<T: Config> = StorageMap<
@@ -268,7 +270,9 @@ pub mod pallet {
 		ValueQuery
 	>;
 
-
+	/// Holds information about all task result submissions.
+	/// Each task result submission is indexed by a unique submission index.
+	/// It allows access to the details of any specific task submission.
 	#[pallet::storage]
 	#[pallet::getter(fn taskresultsubmissions)]
 	/// Info on all of the task result submissions.
@@ -280,7 +284,8 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-
+	/// Tracks the total number of task result submissions
+	/// It is a counter for the number of submissions associated 
 	#[pallet::storage]
 	#[pallet::getter(fn taskresultsubmission_count)]
 	/// The total number of tasks result submissions for a task index.
@@ -308,7 +313,7 @@ pub mod pallet {
 	_, 
 	Blake2_128Concat, 
 	TaskIndex, 
-	[u32; 1000],
+	[u32; 10000],
 	OptionQuery,
 	>;
 
@@ -406,17 +411,14 @@ pub mod pallet {
 		MaxAssignmentsReached,
 		/// Reached 1 million open tasks 
 		OpenTasksLimitReached,
-
 		/// This error indicates that a specified task result submission could not be found in the system.
 		/// It occurs when a function tries to retrieve a `TaskResultSubmission` from storage using a given `submission_index`, 
 		/// but no corresponding entry exists.
 		SubmissionNotFound,
-
 		/// This error suggests that the task result submission is in an inappropriate status for the requested operation.
 		/// It is used when an operation requires the `TaskResultSubmission` to be in a specific state (e.g., 'Assigned'), 
 		/// but the actual status of the submission is different.
 		InvalidStatus,
-
 		/// This error implies that the caller of the function does not have the necessary permissions to perform the action.
 		/// It is returned when a caller, typically a worker, attempts to perform an operation on a submission that they do not own
 		/// or are not authorized to modify.
@@ -665,7 +667,7 @@ pub mod pallet {
         let mut submission_count = TaskResultSubmissionCountByTaskId::<T>::get(task_id).unwrap_or(0);
 
         // Ensure the task has not exceeded its maximum number of assignments
-        ensure!(submission_count < task.max_assignments, Error::<T>::MaxAssignmentsReached);
+        ensure!(submission_count <= task.max_assignments, Error::<T>::MaxAssignmentsReached);
 
         // Increment the submission count
         submission_count = submission_count.checked_add(1).ok_or(Error::<T>::Overflow)?;
@@ -697,16 +699,17 @@ pub mod pallet {
         // Save the new submission in storage
         TaskResultSubmissions::<T>::insert(submission_index, new_submission);
 
-        // Update the task submission IDs
-        let mut submission_ids = TaskResultSubmissionIds::<T>::get(task_id).unwrap_or([0; 1000]);
+        // Update the task submission IDs per task
+        let mut submission_ids = TaskResultSubmissionIds::<T>::get(task_id).unwrap_or([0; 10000]);
         submission_ids[submission_count as usize] = submission_index;
         TaskResultSubmissionIds::<T>::insert(task_id, submission_ids);
 
 		// Add to WorkerSubmissions
 		// Retrieve the current submissions for the worker, or initialize with an empty BoundedVec if none exist
-		let mut worker_submissions = WorkerSubmissions::<T>::get(&worker);
+		let mut worker_submissions 
+			= WorkerSubmissions::<T>::get(&worker);
 
-		// Attempt to add the new submission index to the worker's submissions
+		// Attempt to add the new submission index to the worker's submissions should never fail as it's new
 		if worker_submissions.try_push(submission_index).is_err() {
 			return Err(Error::<T>::WorkerSubmissionLimit.into());
 		}
@@ -732,38 +735,72 @@ pub mod pallet {
     }
 
 
-	// Updated send_task_result function
+
 	#[pallet::call_index(2)]
 	#[pallet::weight(10_000)]
-	pub fn send_task_result(origin: OriginFor<T>, submission_index: TaskResultSubmissionIndex) -> DispatchResultWithPostInfo {
+	pub fn send_task_result(origin: OriginFor<T>, 
+		submission_id: TaskResultSubmissionIndex,
+		result: Option<BoundedVec<u8, ConstU32<2048>>>,
+		result_path: Option<BoundedVec<u8, ConstU32<512>>>,
+		result_storage_type: Option<StorageType>,
+		result_storage_credentials: Option<BoundedVec<u8, ConstU32<1024>>>) -> DispatchResultWithPostInfo {
 		let worker = ensure_signed(origin)?;
-
-		// Retrieve the task result submission
-		let mut submission = TaskResultSubmissions::<T>::get(submission_index).ok_or(Error::<T>::SubmissionNotFound)?;
-
+	
+		// Retrieve the task result submission using the provided submission_id
+		let mut storage_submission 
+			= TaskResultSubmissions::<T>::get(submission_id).ok_or(Error::<T>::SubmissionNotFound)?;
+	
 		// Ensure the submission is assigned to the worker and is in the Assigned status
-		ensure!(submission.worker == worker, Error::<T>::NotAuthorized);
-		ensure!(submission.status == ResultSubmissionStatus::Assigned, Error::<T>::InvalidStatus);
-
-		// Check if result or result path with required details are provided
-		if ((submission.result.is_none() && submission.result_path.is_none()) || (!submission.result_path.is_none() && (submission.result_storage_type.is_none() || submission.result_storage_credentials.is_none())))
-		{
+		ensure!(storage_submission.worker == worker, Error::<T>::NotAuthorized);
+		ensure!(storage_submission.status == ResultSubmissionStatus::Assigned, Error::<T>::InvalidStatus);
+	
+		// Check if result or result path with required details are provided in the provided submission
+		if (result.is_none() && result_path.is_none()) || 
+			(!result_path.is_none() && 
+			(result_storage_type.is_none() || result_storage_credentials.is_none())) {
 			return Err(Error::<T>::InvalidResultSubmission.into());
 		}
-
-		// Update the submission status to PendingValidation
-		submission.status = ResultSubmissionStatus::PendingValidation;
-		TaskResultSubmissions::<T>::insert(submission_index, submission);
-
+	
+		// Update the submission in storage with the provided submission details
+		storage_submission.result = result;
+		storage_submission.result_path = result_path;
+		storage_submission.result_storage_type = result_storage_type;
+		storage_submission.result_storage_credentials = result_storage_credentials;
+		storage_submission.status = ResultSubmissionStatus::PendingValidation;
+	
+		// Save the updated submission
+		TaskResultSubmissions::<T>::insert(submission_id, storage_submission);
+	
 		// Update WorkerSubmissions storage
 		let mut worker_submissions = WorkerSubmissions::<T>::get(&worker);
-		worker_submissions.try_push(submission_index).map_err(|_| Error::<T>::WorkerSubmissionLimit)?;
-		WorkerSubmissions::<T>::insert(&worker, worker_submissions);
+
+		// Find the index of the existing submission_id, if it exists this is more efficent that using contains !worker_submissions.contains because otherwise we would do it twice
+		if let Some(index) = worker_submissions.iter().position(|&x| x == submission_id) {
+			// TODO DO WE NEED TO UPDATE HRE? 
+			// worker_submissions[index] =  submission.submission_id; // Assuming `new_submission_id` is the ID you want to insert
+		} else {
+			// If the submission_id does not exist, try to add it, however it should always be here from assignment so is this an error
+			worker_submissions.try_push(submission_id)
+				.map_err(|_| Error::<T>::WorkerSubmissionLimit)?;
+			// Save the updated submissions for the worker
+			///  insert in the context of a storage map in Substrate will replace any existing value associated with the specified key. In the case of WorkerSubmissions::<T>::insert(&worker, worker_submissions);, if there is already a value associated with the key &worker, this value will be replaced with the new worker_submissions.
+			WorkerSubmissions::<T>::insert(&worker, worker_submissions);
+		}
+
 
 		Ok(().into())
 	}
 	
+
+
 	}
+
+
+	
+
+
+
+
 
 
 	impl<T: Config> Pallet<T> {

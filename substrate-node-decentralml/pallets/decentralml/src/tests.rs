@@ -1,7 +1,7 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
 
-use crate::{ResultSubmissionStatus, TaskResultSubmission, ValidationStrategy,TaskType,StorageType,TaskStatus,TaskInfo,Tasks, TaskResultSubmissionCountByTaskId,TaskResultSubmissionCount,TaskResultSubmissions};
+use crate::{WorkerSubmissions,ResultSubmissionStatus, TaskResultSubmission, ValidationStrategy,TaskType,StorageType,TaskStatus,TaskInfo,Tasks, TaskResultSubmissionCountByTaskId,TaskResultSubmissionCount,TaskResultSubmissions};
 use frame_support::BoundedVec;
 
 
@@ -127,8 +127,6 @@ fn assign_task_successfully() {
 }
 
 
-
-
 fn create_and_assign_task(task_id: u32, worker_account: u32) {
     let task_id = 0;
     let max_assignments = 3;
@@ -180,6 +178,81 @@ fn create_and_assign_task(task_id: u32, worker_account: u32) {
     TaskResultSubmissionCountByTaskId::<Test>::insert(task_id, 1);
 }
 
+
+#[test]
+fn send_task_result_success() {
+    new_test_ext().execute_with(|| {
+        // Arrange: Create and assign a task
+        let task_id = 1;
+        let worker_account = 1;
+        create_and_assign_task(task_id, worker_account);
+
+        // Prepare task result submission details
+        let submission_id = TaskResultSubmissionCount::<Test>::get() - 1;
+        let result = Some(vec![1, 2, 3, 4].try_into().unwrap()); // Example result
+        let result_path = Some(vec![5, 6, 7, 8].try_into().unwrap()); // Example result path
+        let result_storage_type = Some(StorageType::IPFS); // Example storage type
+        let result_storage_credentials = Some(vec![9, 10, 11, 12].try_into().unwrap()); // Example storage credentials
+
+        // Act: Send the updated task result
+        assert_ok!(DecentralMLModule::send_task_result(
+            RuntimeOrigin::signed(1),
+            submission_id,
+            result.clone(),
+            result_path.clone(),
+            result_storage_type.clone(),
+            result_storage_credentials.clone()
+        ));
+
+        // Assert: Check that the task result submission is updated correctly
+        let updated_submission = TaskResultSubmissions::<Test>::get(submission_id).unwrap();
+        assert_eq!(updated_submission.result, result);
+        assert_eq!(updated_submission.result_path, result_path);
+        assert_eq!(updated_submission.result_storage_type, result_storage_type);
+        assert_eq!(updated_submission.result_storage_credentials, result_storage_credentials);
+        assert_eq!(updated_submission.status, ResultSubmissionStatus::PendingValidation);
+
+        // Assert: Check that the worker's submissions include the updated submission
+        let worker_submissions = WorkerSubmissions::<Test>::get(1);
+        assert!(worker_submissions.contains(&submission_id));
+    });
+}
+
+
+// #[test]
+// fn send_task_result_success() {
+//     new_test_ext().execute_with(|| {
+//         // Arrange: Create and assign
+//         let task_id = 1;
+//         let worker_account = 1;
+//         create_and_assign_task(task_id, worker_account);
+
+//         // Prepare a task result submission
+//         let submission_id = TaskResultSubmissionCount::<Test>::get() - 1;
+//         let mut submission = TaskResultSubmissions::<Test>::get(submission_id).unwrap();
+
+//         // Update the submission with result details
+//         submission.result = Some(vec![1, 2, 3, 4].try_into().unwrap());
+//         submission.result_path = Some(vec![5, 6, 7, 8].try_into().unwrap());
+//         submission.result_storage_type = Some(StorageType::IPFS);
+//         submission.result_storage_credentials = Some(vec![9, 10, 11, 12].try_into().unwrap());
+
+//         // Act: Send the updated task result RuntimeOrigin::signed(1)
+//         assert_ok!(DecentralMLModule::send_task_result(RuntimeOrigin::signed(1), submission.clone()));
+
+//         // Assert: Check that the task result submission is updated correctly
+//         let updated_submission = TaskResultSubmissions::<Test>::get(submission_id).unwrap();
+//         assert_eq!(updated_submission.result, submission.result);
+//         assert_eq!(updated_submission.result_path, submission.result_path);
+//         assert_eq!(updated_submission.result_storage_type, submission.result_storage_type);
+//         assert_eq!(updated_submission.result_storage_credentials, submission.result_storage_credentials);
+//         assert_eq!(updated_submission.status, ResultSubmissionStatus::PendingValidation);
+
+//         // Assert: Check that the worker's submissions are updated
+//         let worker_submissions = WorkerSubmissions::<Test>::get(1u64);
+//         assert!(worker_submissions.contains(&submission_id));
+//     });
+// }
 
 
 // #[test]
