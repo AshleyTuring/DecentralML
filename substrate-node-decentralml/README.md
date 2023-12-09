@@ -82,6 +82,11 @@ $ ls ./my-chain-state/chains/dev
 db keystore network
 ```
 
+> **NOTE**: Please note that if the node and the client resides on two different machines (real or virtual), the node needs to be set to accept connections from outside of `localhost`. To do so, the launch command needs additional flags as follow:
+```
+./target/release/node-decentralml --rpc-external --rpc-methods=Unsafe --prometheus-external --rpc-cors all
+```
+
 ### Connect with Polkadot-JS Apps Front-End
 
 After you start the node template locally, you can interact with it using the hosted version of the [Polkadot/Substrate Portal](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) front-end by connecting to the local node endpoint.
