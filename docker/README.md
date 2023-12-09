@@ -46,6 +46,32 @@ cd /decentralml/
 python3 -m substrate-client-decentralml.create_task_ipfs
 ```
 
+## File description
+
+The `docker` folder contains the following file:
+
+```
+.
+├── README.md
+├── build_client.sh
+├── build_node.sh
+├── client_container
+│   ├── Dockerfile
+│   └── launch_client.sh
+├── decentralml_app
+│   └── docker-compose.yml
+└── node_container
+    ├── Dockerfile
+    └── launch_node.sh
+```
+
+In which:
+
+- `build_node.sh` and `build_client.sh` are Unix scripts to build the docker image for the node and client respectively.
+- `client_container` is a folder containing the description of the client image in `Dockerfile` and the command to be launch in the container created from this image `launch_client.sh`
+- `node_container` is a folder containing the description of the node image in `Dockerfile` and the command to be launch in the container created from this image `launch_client.sh`
+- `docker-compose.yml` in `decentralml_app` is a file that describes how the microservice infrastructure is built at runtime.
+
 
 
 
