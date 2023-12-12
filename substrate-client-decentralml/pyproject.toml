@@ -5,5 +5,5 @@ authors = ["Mathias Ciliberto <mathias.ciliberto@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-substrate-interface
-requests
+substrate-interface=">=1.7.4"
+requests="2.31"
