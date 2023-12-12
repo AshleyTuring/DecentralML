@@ -1,43 +1,9 @@
-from substrateinterface import SubstrateInterface, Keypair
-from substrateinterface.exceptions import SubstrateRequestException
 import binascii
 
-# Constants
-SOCKET_URL = "ws://127.0.0.1:9944"
+from substrateinterface import Keypair
+from substrateinterface.exceptions import SubstrateRequestException
 
-# Helper Functions
-def get_validation_strategy_dict(strategy):
-    return {strategy: {
-        'AutoAccept': 0,
-        'ManualAccept': 1,
-        'CustomAccept': 2,
-    }.get(strategy, 0)}
-
-def get_task_type_dict(task_type):
-    return {task_type: {
-        'DataAnnotators': 0,
-        'ModelContributor': 1,
-        'ModelEngineer': 2,
-        'Client': 3,
-    }.get(task_type, 1)}  # Default to ModelContributor
-
-def get_storage_type_dict(storage_type):
-    return {storage_type: {
-        'IPFS': 0,
-        'Crust': 1,
-        'S3': 2,
-        'GCP': 3,
-        'Azure': 4,
-    }.get(storage_type, {'IPFS': 0})}  # Default to IPFS
-
-def get_annotation_type_dict(annotation_type):
-    return {annotation_type: {
-        'Image': 0,
-        'Audio': 1,
-        'Text': 2,
-        'Video': 3,
-    }.get(annotation_type, 0)}  # Default to Image
-
+from .utilities import get_task_type_dict, get_validation_strategy_dict, get_annotation_type_dict, get_storage_type_dict
 
 
 def create_task_data_annotator(expiration_block, substrate, sudoaccount, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials):
@@ -124,6 +90,7 @@ def create_task_data_annotator(expiration_block, substrate, sudoaccount, passphr
     except SubstrateRequestException as e:
         print(f"create_task_data_annotator Failed to send extrinsic: {e}")
 
+
 def create_task_model_engineer(expiration_block, substrate, sudoaccount, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials):
     """
     Creates a new model engineer task on the Substrate blockchain.
@@ -181,6 +148,7 @@ def create_task_model_engineer(expiration_block, substrate, sudoaccount, passphr
     except SubstrateRequestException as e:
         print(f"create_task_model_engineer Failed to send extrinsic: {e}")
 
+
 def create_task_model_contributor(expiration_block, substrate, sudoaccount, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials):
     # Determine the keypair to use
     keypair = sudoaccount if sudoaccount else Keypair.create_from_mnemonic(passphrase)
@@ -234,51 +202,3 @@ def create_task_model_contributor(expiration_block, substrate, sudoaccount, pass
         print(f"create_task_model_contributor Extrinsic '{receipt.extrinsic_hash}' sent and included in block '{receipt.block_hash}'")
     except SubstrateRequestException as e:
         print(f"create_task_model_contributor Failed to send extrinsic: {e}")
-
-def main():
-    substrate = SubstrateInterface(url=SOCKET_URL)
-    passphrase = None  # Assuming no passphrase is provided uses Alice
-
-    # Common parameters for all tasks
-    task_type = "ModelContributor"
-    question = "Explain the functionality of the model"
-    pays_amount = 1000 * 10**18  # Example amount in the smallest unit
-    max_assignments = 10
-    validation_strategy = 'AutoAccept'
-    expiration_block = 100
-
-    # Model Contributor specific parameters
-    model_contributor_script_path = "/ipfs/QmScriptPath"
-    model_contributor_script_storage_type = "IPFS"
-    model_contributor_script_storage_credentials = "ipfs_access_credentials"
-
-    # Data Annotator specific parameters
-    annotation_type = "Image"
-    annotation_media_samples = ["/ipfs/QmMediaSamples1", "/ipfs/QmMediaSamples2"]
-    annotation_files = ["/ipfs/QmAnnotationFile1", "/ipfs/QmAnnotationFile2"]
-    annotation_class_labels = "Label1,Label2"
-    annotation_class_coordinates = "0,0,10,10"
-    annotation_json = "{\"key\": \"value\"}"
-    annotation_files_storage_type = "S3"
-    annotation_files_storage_credentials = "s3_access_credentials"
-
-    # Model Engineer specific parameters
-    model_engineer_path = "/ipfs/QmModelPath"
-    model_engineer_storage_type = "GCP"
-    model_engineer_storage_credentials = "gcp_access_credentials"
-
-    # Determine the account to use based on passphrase availability
-    if passphrase:
-        create_task_model_contributor(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
-        create_task_data_annotator(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
-        create_task_model_engineer(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
-    else:
-        alice = Keypair.create_from_uri('//Alice')
-        create_task_model_contributor(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
-        create_task_data_annotator(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
-        create_task_model_engineer(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
-
-if __name__ == "__main__":
-    main()
-
-
