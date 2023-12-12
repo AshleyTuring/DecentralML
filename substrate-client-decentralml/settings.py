@@ -17,6 +17,21 @@ except KeyError:
     working_directory = os.getcwd()
     ASSETS_FOLDER = os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
 
+try:
+    IPFS_END_POINT = os.environ["IPFS_END_POINT"]
+except KeyError:
+    IPFS_END_POINT = "https://ipfs.infura.io:5001"
+
+try:
+    IPFS_API_KEY = os.environ["IPFS_API_KEY"]
+except KeyError:
+    IPFS_API_KEY = "#######"
+
+try:
+    IPFS_API_SECRET = os.environ["IPFS_API_SECRET"]
+except KeyError:
+    IPFS_API_SECRET = "#######"
+
 def load_user_settings():
     pass
 
