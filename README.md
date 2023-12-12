@@ -132,40 +132,7 @@ cargo test
 
 ## Python Client
 
-There are several python scripts that correlate to create_task, assign_task, send_task_result, validate_task_result, accept_task_result, reject_task_result, list_tasks, list_task_results which allows interaction with Substrate DecentralML node and custom pallets.
-
-It exposes and provides methods to communicate to fund actors involved and execute several tasks on the node.
-
-This is achieved by installing the substrate-interface package into your distribution.
-
-### Prerequisites
-
-Python, pip and substrate-interface package are required to run the script.
-
-After cloning the repository, switch to the decentraml/substrate-client-decentralml directory.
-
-```bash
-cd {checkout_directory}DecentralML/substrate-client-decentralml
-```
-
-- Install python [Installation] https://www.datacamp.com/blog/how-to-install-python
-
-- Install pip [Installation] https://pip.pypa.io/en/stable/installation/
-
-- Install substrate-interface package by running pip command:
-
-```bash
-pip install substrate-interface
-```
-
-- To execute the client script, run the following command:
-
-```bash
-python create_task.py
-```
-
-Please refer to the [python substrate interface documentation](https://pypi.org/project/substrate-interface/1.4.1/)
-for API reference documentation
+Follow the instructions [here](https://github.com/livetreetech/DecentralML/blob/main/substrate-node-decentralml/README.md)
 
 ## Storage of assets
 
