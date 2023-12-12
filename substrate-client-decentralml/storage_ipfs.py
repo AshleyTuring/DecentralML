@@ -4,9 +4,7 @@ from .utilities import get_substring
 from .utilities import remove_spaces
 from .utilities import remove_characters
 
-API_KEY = "2YBXx5wpHlPPOrL91T8VwedHdz7"
-API_KEY_SECRET = "497193a34170a89435eb4d9582dab729"
-END_POINT = "https://ipfs.infura.io:5001"
+from .settings import IPFS_API_KEY, IPFS_API_SECRET
 
 HASH_COLON = 'Hash:'
 
@@ -18,7 +16,7 @@ PATH_TO_DECENTRALML_CONFIG = ''
 
 def upload_files_to_ipfs(files):
 
-    response = requests.post(f'{END_POINT}/api/v0/add', files=files, auth=(API_KEY, API_KEY_SECRET))
+    response = requests.post(f'{IPFS_END_POINT}/api/v0/add', files=files, auth=(IPFS_API_KEY, IPFS_API_SECRET))
     hash_values = response.text.split("\n")
     hash_value = hash_values[0]
 
@@ -37,7 +35,7 @@ def retrieve_files_from_ipfs(hash_ids):
 
         for hash_id in hash_ids:
             params = {'arg': hash_id}
-            response = requests.post(f'{END_POINT}/api/v0/cat', params=params, auth=(API_KEY, API_KEY_SECRET))
+            response = requests.post(f'{IPFS_END_POINT}/api/v0/cat', params=params, auth=(IPFS_API_KEY, IPFS_API_SECRET))
             filenames.append(response.text)
 
     return filenames
@@ -50,7 +48,7 @@ def delete_files_from_ipfs(hash_ids):
 
         for hash_id in hash_ids:
             params = {'arg': hash_id}
-            response = requests.post(END_POINT + '/api/v0/pin/rm', params=params, auth=(API_KEY, API_KEY_SECRET))
+            response = requests.post(IPFS_END_POINT + '/api/v0/pin/rm', params=params, auth=(IPFS_API_KEY, IPFS_API_SECRET))
             responses.append(response.json())
 
     return responses
