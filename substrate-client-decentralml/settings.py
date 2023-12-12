@@ -2,6 +2,7 @@ import os
 
 SOCKET_URL = None
 ASSETS_FOLDER = None
+IPFS_END_POINT = None
 IPFS_API_KEY = None
 IPFS_API_SECRET = None
 

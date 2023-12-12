@@ -4,7 +4,7 @@ from .utilities import get_substring
 from .utilities import remove_spaces
 from .utilities import remove_characters
 
-from .settings import IPFS_API_KEY, IPFS_API_SECRET
+from .settings import IPFS_END_POINT, IPFS_API_KEY, IPFS_API_SECRET
 
 HASH_COLON = 'Hash:'
 
