@@ -1,7 +1,6 @@
 import os
 
 from .settings import ASSETS_FOLDER
-from .storage_ipfs import upload_files_to_ipfs
 
 def remove_characters(input_string, characters_to_remove):
     for char in characters_to_remove:
@@ -80,43 +79,3 @@ def get_status_dict(strategy):
         'Accepted': 2,
         'Rejected': 3,
     }.get(strategy, 0)}
-
-def get_annotation_files_ids():
-
-    assets_directory = ASSETS_FOLDER
-    annotation_files = get_files_from_folder(os.path.join(assets_directory, 'annotation_files'))
-    return upload_files(annotation_files)
-
-def get_annotation_samples_ids():
-    
-    assets_directory = ASSETS_FOLDER
-    annotation_samples = get_files_from_folder(os.path.join(assets_directory, 'annotation_samples'))
-    return upload_files(annotation_samples)
-
-def get_model_contributor_script_id():
-
-    assets_directory = ASSETS_FOLDER
-    model_contributor_scripts = get_files_from_folder(os.path.join(assets_directory,'model_contributor'))
-    return upload_files(model_contributor_scripts)[0] # We assume we only have one model contributor script for simplicity
-
-def get_model_engineer_model_id():
-    
-    assets_directory = ASSETS_FOLDER
-    engineer_models = get_files_from_folder(os.path.join(assets_directory, 'model_engineer'))
-    return upload_files(engineer_models)[0] # We assume we only have one engineer model for simplicity
-
-def get_result_path():
-    assets_directory = ASSETS_FOLDER
-    result_path_weights = get_files_from_folder(os.path.join(assets_directory, 'result_path'))
-    return upload_files(result_path_weights)[0] # We only have one result of weights per task
-
-def upload_files(files):
-    
-    ipfs_ids = []
-
-    for file in files:
-        params = {f'file': file}
-        asset_ipfs_id = upload_files_to_ipfs(params)
-        ipfs_ids.append(asset_ipfs_id)
-
-    return ipfs_ids
