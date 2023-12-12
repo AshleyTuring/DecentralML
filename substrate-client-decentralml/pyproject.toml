@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "decentralml_client"
+name = "decentralml"
 version = "1.0"
 authors = ["Mathias Ciliberto <mathias.ciliberto@gmail.com>"]
 description = "Python client for DecentralML"
