@@ -1,6 +1,6 @@
 from substrateinterface import SubstrateInterface, Keypair
 
-from .utilities import get_annotation_files_ids, get_annotation_samples_ids, get_model_contributor_script_id, get_model_engineer_model_id, get_result_path
+from .storage_ipfs import get_annotation_files_ids, get_annotation_samples_ids, get_model_contributor_script_id, get_model_engineer_model_id, get_result_path
 from .create_task import create_task_data_annotator, create_task_model_contributor, create_task_model_engineer
 from .send_task_result import send_task_result
 
