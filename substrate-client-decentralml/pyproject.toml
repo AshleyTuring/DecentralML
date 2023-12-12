@@ -6,5 +6,6 @@ description = "Python client for DecentralML"
 readme = "README.md"
 
 [tool.poetry.dependencies]
+python=">=3.10"
 substrate-interface=">=1.7.4"
 requests="2.31"
