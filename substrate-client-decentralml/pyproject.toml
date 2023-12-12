@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "decentralml_client"
+version = "1.0"
+authors = ["Mathias Ciliberto <mathias.ciliberto@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+substrate-interface
+requests
