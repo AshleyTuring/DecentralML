@@ -28,3 +28,6 @@ substrate-client-decentralml/__pycache__/utilities.cpython-311.pyc
 substrate-node-template/Cargo.lock
 substrate-client-decentralml/__pycache__/storage_ipfs.cpython-311.pyc
 substrate-client-decentralml/__pycache__
+
+**.lock
+**__pycache__
