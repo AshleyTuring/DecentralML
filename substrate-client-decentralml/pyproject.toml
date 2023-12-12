@@ -2,6 +2,7 @@
 name = "decentralml_client"
 version = "1.0"
 authors = ["Mathias Ciliberto <mathias.ciliberto@gmail.com>"]
+description = "Python client for DecentralML"
 readme = "README.md"
 
 [tool.poetry.dependencies]
