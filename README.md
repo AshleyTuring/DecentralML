@@ -132,7 +132,7 @@ cargo test
 
 ## Python Client
 
-Follow the instructions [here](https://github.com/livetreetech/DecentralML/blob/main/substrate-node-decentralml/README.md)
+Follow the instructions [here](https://github.com/livetreetech/DecentralML/blob/main/substrate-client-decentralml/README.md)
 
 ## Storage of assets
 
