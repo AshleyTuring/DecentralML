@@ -149,7 +149,7 @@ def main():
         print("6 - Exit")
         try:
             choice = int(input("Select your example: "))
-            if choice > 4 or choice < 1:
+            if choice > 6 or choice < 1:
                 raise ValueError()
             match choice:
                 case 1:
@@ -165,7 +165,7 @@ def main():
                 case 6:
                     choice = -1
         except ValueError as e:
-            print("Choice must be one value in the interval [1-5]")
+            print("Choice must be one value in the interval [1-6]")
             choice = -1
     
 
