@@ -141,21 +141,29 @@ def main():
     choice = 0
     while choice != -1:
         print("Functionality to tests:")
-        print("1 - Create tasks")
-        print("2 - Assign tasks")
-        print("3 - Send task results")
-        print("4 - Exit")
+        print("1 - Create data annotator task")
+        print("2 - Create model contributor task")
+        print("3 - Create model engineer task")
+        print("4 - Assign tasks")
+        print("5 - Send task results")
+        print("6 - Exit")
         try:
             choice = int(input("Select your example: "))
             if choice > 4 or choice < 1:
                 raise ValueError()
             match choice:
                 case 1:
-                    create_all_tasks_ipfs()
+                    create_data_annotator_task()
                 case 2:
-                    assign_task()
+                    create_model_contributor_task()
                 case 3:
+                    create_model_contributor_task()
+                case 4:
+                    assign_task()
+                case 5:
                     send_task_results()
+                case 6:
+                    choice = -1
         except ValueError as e:
             print("Choice must be one value in the interval [1-5]")
             choice = -1
