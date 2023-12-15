@@ -34,7 +34,7 @@ except KeyError:
     IPFS_API_SECRET = "#######"
 
 try:
-    EMULATE_IPFS = bool(os.environ("EMULATE_IPFS"))
+    EMULATE_IPFS = bool(os.environ["EMULATE_IPFS"])
 except KeyError:
     EMULATE_IPFS = False
 
