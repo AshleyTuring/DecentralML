@@ -2,7 +2,7 @@ import os
 import requests
 
 from .utilities import find_character_position, get_substring, remove_spaces, remove_characters, get_files_from_folder
-from .settings import IPFS_END_POINT, IPFS_API_KEY, IPFS_API_SECRET, ASSETS_FOLDER
+from .settings import IPFS_END_POINT, IPFS_API_KEY, IPFS_API_SECRET, ASSETS_FOLDER, EMULATE_IPFS
 
 HASH_COLON = 'Hash:'
 
@@ -51,14 +51,15 @@ def delete_files_from_ipfs(hash_ids):
 
     return responses
 
-def upload_files(files):
+def upload_files(files, emulate=EMULATE_IPFS):
     
     ipfs_ids = []
 
-    for file in files:
-        params = {f'file': file}
-        asset_ipfs_id = upload_files_to_ipfs(params)
-        ipfs_ids.append(asset_ipfs_id)
+    if not emulate:
+        for file in files:
+            params = {f'file': file}
+            asset_ipfs_id = upload_files_to_ipfs(params)
+            ipfs_ids.append(asset_ipfs_id)
 
     return ipfs_ids
 

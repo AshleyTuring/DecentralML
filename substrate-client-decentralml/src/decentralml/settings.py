@@ -5,6 +5,7 @@ ASSETS_FOLDER = None
 IPFS_END_POINT = None
 IPFS_API_KEY = None
 IPFS_API_SECRET = None
+EMULATE_IPFS = None
 
 try:
     SOCKET_URL = os.environ["SOCKET_URL"]
@@ -31,6 +32,11 @@ try:
     IPFS_API_SECRET = os.environ["IPFS_API_SECRET"]
 except KeyError:
     IPFS_API_SECRET = "#######"
+
+try:
+    EMULATE_IPFS = bool(os.environ("EMULATE_IPFS"))
+except KeyError:
+    EMULATE_IPFS = False
 
 def load_user_settings():
     pass
