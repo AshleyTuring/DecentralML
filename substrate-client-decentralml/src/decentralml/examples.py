@@ -3,6 +3,7 @@ from substrateinterface import SubstrateInterface, Keypair
 from .storage_ipfs import get_annotation_files_ids, get_annotation_samples_ids, get_model_contributor_script_id, get_model_engineer_model_id, get_result_path
 from .create_task import create_task_data_annotator, create_task_model_contributor, create_task_model_engineer
 from .send_task_result import send_task_result
+from .assign_task import assign_task
 
 from .settings import SOCKET_URL
 
@@ -106,7 +107,7 @@ def create_all_tasks_ipfs():
     create_model_contributor_task()
     create_model_engineer_task()
 
-def assign_task():
+def assign_task_example():
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Replace with actual passphrase or keep as None to use sudoaccount
     task_id = 1  # Replace with the actual task ID to assign
@@ -118,7 +119,7 @@ def assign_task():
         alice = Keypair.create_from_uri('//Alice')
         assign_task(substrate, alice, None, task_id)
 
-def send_task_results():
+def send_task_results_example():
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Assuming no passphrase is provided
 
@@ -159,9 +160,9 @@ def main():
                 case 3:
                     create_model_contributor_task()
                 case 4:
-                    assign_task()
+                    assign_task_example()
                 case 5:
-                    send_task_results()
+                    send_task_results_example()
                 case 6:
                     choice = -1
         except ValueError as e:
