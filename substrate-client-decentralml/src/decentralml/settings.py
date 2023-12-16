@@ -15,8 +15,8 @@ except KeyError:
 try:
     ASSETS_FOLDER = os.environ["ASSETS_FOLDER"]
 except KeyError:
-    working_directory = os.getcwd()
-    ASSETS_FOLDER = os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
+    working_directory = os.path.expanduser("~")
+    ASSETS_FOLDER = os.path.join(working_directory, 'DecentralML', 'assets')
 
 try:
     IPFS_END_POINT = os.environ["IPFS_END_POINT"]
@@ -36,7 +36,7 @@ except KeyError:
 try:
     EMULATE_IPFS = bool(os.environ["EMULATE_IPFS"])
 except KeyError:
-    EMULATE_IPFS = False
+    EMULATE_IPFS = True
 
 def load_user_settings():
     pass

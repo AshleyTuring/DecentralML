@@ -55,7 +55,11 @@ def upload_files(files, emulate=EMULATE_IPFS):
     
     ipfs_ids = []
 
-    if not emulate:
+    if emulate:
+        ipfs_ids = ['gqwszizmwp',
+                    'urwkvqlzfp',
+                    'dpbsawqmbl']
+    else:
         for file in files:
             params = {f'file': file}
             asset_ipfs_id = upload_files_to_ipfs(params)
