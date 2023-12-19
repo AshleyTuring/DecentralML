@@ -1,17 +1,9 @@
 version: '3.7'
 
-services:
-  node_decentral:
-    image: decentralml_node:latest
-    container_name: node_decentralml
-    ports:
-      - 9944:9944
-      - 9615:9615
-    stdin_open: true 
-    tty: true
-  client_decentral:
+services:  
+  model_contributor_decentral:
     image: decentralml_client:latest
-    container_name: client_decentralml
+    container_name: model_contributor_decentral
     volumes:
       - $HOME/DecentralML/assets/:/decentralml/assets
     environment:
@@ -20,8 +12,6 @@ services:
       - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
       - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
       - IPFS_END_POINT=https://ipfs.infura.io:5001
-      - EMULATE_IPFS=False
-    links:
-      - "node_decentral:node"
+      - EMULATE_IPFS=True
     stdin_open: true 
     tty: true

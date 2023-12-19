@@ -36,4 +36,4 @@ RUN chmod +x /decentralml/launch_node.sh
 
 ENV SHELL=/bin/bash
 
-ENTRYPOINT [ "/decentralml/launch_node.sh" ]
+ENTRYPOINT [ "/bin/bash" ]

@@ -6,7 +6,7 @@ RUN chown root:root /decentralml
 RUN apt-get update
 RUN apt install -y build-essential protobuf-compiler libclang-dev
 
-RUN git clone -b client_refactoring https://github.com/livetreetech/DecentralML.git /tmp/
+RUN git clone -b federated_learning https://github.com/livetreetech/DecentralML.git /tmp/
 WORKDIR /tmp/substrate-node-decentralml
 
 FROM --platform=$BUILDPLATFORM ubuntu:22.04

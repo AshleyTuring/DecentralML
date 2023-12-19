@@ -5,6 +5,7 @@ ASSETS_FOLDER = None
 IPFS_END_POINT = None
 IPFS_API_KEY = None
 IPFS_API_SECRET = None
+EMULATE_IPFS = None
 
 try:
     SOCKET_URL = os.environ["SOCKET_URL"]
@@ -14,8 +15,8 @@ except KeyError:
 try:
     ASSETS_FOLDER = os.environ["ASSETS_FOLDER"]
 except KeyError:
-    working_directory = os.getcwd()
-    ASSETS_FOLDER = os.path.join(working_directory, 'substrate-client-decentralml', 'assets')
+    working_directory = os.path.expanduser("~")
+    ASSETS_FOLDER = os.path.join(working_directory, 'DecentralML', 'assets')
 
 try:
     IPFS_END_POINT = os.environ["IPFS_END_POINT"]
@@ -31,6 +32,11 @@ try:
     IPFS_API_SECRET = os.environ["IPFS_API_SECRET"]
 except KeyError:
     IPFS_API_SECRET = "#######"
+
+try:
+    EMULATE_IPFS = bool(os.environ["EMULATE_IPFS"])
+except KeyError:
+    EMULATE_IPFS = True
 
 def load_user_settings():
     pass

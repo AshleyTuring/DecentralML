@@ -3,6 +3,7 @@ from substrateinterface import SubstrateInterface, Keypair
 from .storage_ipfs import get_annotation_files_ids, get_annotation_samples_ids, get_model_contributor_script_id, get_model_engineer_model_id, get_result_path
 from .create_task import create_task_data_annotator, create_task_model_contributor, create_task_model_engineer
 from .send_task_result import send_task_result
+from .assign_task import assign_task
 
 from .settings import SOCKET_URL
 
@@ -106,7 +107,7 @@ def create_all_tasks_ipfs():
     create_model_contributor_task()
     create_model_engineer_task()
 
-def assign_task():
+def assign_task_example():
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Replace with actual passphrase or keep as None to use sudoaccount
     task_id = 1  # Replace with the actual task ID to assign
@@ -118,7 +119,7 @@ def assign_task():
         alice = Keypair.create_from_uri('//Alice')
         assign_task(substrate, alice, None, task_id)
 
-def send_task_results():
+def send_task_results_example():
     substrate = SubstrateInterface(url=SOCKET_URL)
     passphrase = None  # Assuming no passphrase is provided
 
@@ -141,23 +142,31 @@ def main():
     choice = 0
     while choice != -1:
         print("Functionality to tests:")
-        print("1 - Create tasks")
-        print("2 - Assign tasks")
-        print("3 - Send task results")
-        print("4 - Exit")
+        print("1 - Create data annotator task")
+        print("2 - Create model contributor task")
+        print("3 - Create model engineer task")
+        print("4 - Assign tasks")
+        print("5 - Send task results")
+        print("6 - Exit")
         try:
             choice = int(input("Select your example: "))
-            if choice > 4 or choice < 1:
+            if choice > 6 or choice < 1:
                 raise ValueError()
             match choice:
                 case 1:
-                    create_all_tasks_ipfs()
+                    create_data_annotator_task()
                 case 2:
-                    assign_task()
+                    create_model_contributor_task()
                 case 3:
-                    send_task_results()
+                    create_model_contributor_task()
+                case 4:
+                    assign_task_example()
+                case 5:
+                    send_task_results_example()
+                case 6:
+                    choice = -1
         except ValueError as e:
-            print("Choice must be one value in the interval [1-5]")
+            print("Choice must be one value in the interval [1-6]")
             choice = -1
     
 
