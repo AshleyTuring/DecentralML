@@ -1,6 +1,6 @@
 from substrateinterface import SubstrateInterface, Keypair
 
-from .create_task import create_task_data_annotator, create_task_model_contributor, create_task_model_engineer
+from .examples import create_data_annotator_task, create_model_contributor_task, create_model_engineer_task
 from .assign_task import assign_task
 from .send_task_result import send_task_result
 from .storage_ipfs import get_result_path
@@ -14,18 +14,18 @@ class ModelCreator:
 
     @staticmethod
     def create_task_data_ann():
-        task_id = create_task_data_annotator()
+        task_id = create_data_annotator_task()
         upload_data("data_annotators", task_id)
     
     @staticmethod
     def create_task_model_contr():
-        task_id = create_task_model_contributor()
+        task_id = create_model_contributor_task()
         upload_data("model_contributor", task_id)
 
     @staticmethod
     def create_task_model_eng():
-        task_id = create_task_model_engineer()
-        upload_data("model_contributor", task_id)
+        task_id = create_model_engineer_task()
+        upload_data("model_engineer", task_id)
 
     @staticmethod
     def menu():
@@ -39,7 +39,7 @@ class ModelCreator:
             print(f"\t4\t-\tReject task results")
             print(f"\t5\t-\tExit")
             try:
-                choice = int(input(choice))
+                choice = int(input())
                 match choice:
                     case 1:
                         subchoice = -1
@@ -50,7 +50,7 @@ class ModelCreator:
                             print(f"\t3\t-\tModel engineer")
                             print(f"\t4\t-\tCancel")
                             try:
-                                subchoice = int(input(choice))
+                                subchoice = int(input())
                             except ValueError as e:
                                 print("Choice must be one value in the interval [1-4]")
                                 subchoice = -1
