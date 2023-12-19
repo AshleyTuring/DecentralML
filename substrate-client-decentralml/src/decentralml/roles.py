@@ -59,10 +59,10 @@ class ModelCreator:
                                     ModelCreator.create_task_data_ann()
                                     subchoice = 4
                                 case 2:
-                                    ModelCreator.create_task_model_contributor()
+                                    ModelCreator.create_task_model_contr()
                                     subchoice = 4
                                 case 3:
-                                    ModelCreator.create_task_model_engineer()
+                                    ModelCreator.create_task_model_eng()
                                     subchoice = 4
                                 case _:
                                     print("Choice must be one value in the interval [1-4]")
