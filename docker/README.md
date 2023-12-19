@@ -43,7 +43,7 @@ From this shell, you can use the python scripts in the folder `/decentralml/subs
 After you attached a new shell to the `client_decentral` container, you can test the connection and the creation of tasks with the following commands:
 ```
 cd /decentralml/
-python3 -m decentralml.create_task_ipfs
+python3 -m decentralml.examples
 ```
 
 ## File description
