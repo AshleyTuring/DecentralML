@@ -6,9 +6,6 @@ services:
     container_name: model_engineer_decentral
     volumes:
       - $HOME/DecentralML/assets/:/decentralml/assets
-    ports:
-      - 9944:9944
-      - 9615:9615
     environment:
       - SOCKET_URL=ws://127.0.0.1:9944
       - ASSETS_FOLDER=/decentralml/assets/
