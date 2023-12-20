@@ -11,7 +11,7 @@ def upload_data_to_remote(role_folder, task_id):
     os.makedirs(remote_folder, exist_ok=True)
     files = [f for f in glob.glob(join(ASSETS_FOLDER, role_folder)+"/**")]
     for local_f in files:
-        remote_f = local_f.replace(ASSETS_FOLDER, f"{REMOTE_FOLDER}/{task_id}")
+        remote_f = local_f.replace(ASSETS_FOLDER, f"{REMOTE_FOLDER}/{task_id}/")
         shutil.copy(local_f, remote_f)
 
 def download_data_from_remote(role_folder, task_id):
