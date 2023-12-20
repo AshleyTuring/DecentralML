@@ -8,6 +8,7 @@ RUN apt install -y build-essential protobuf-compiler libclang-dev
 
 RUN git clone https://github.com/livetreetech/DecentralML.git /decentralml
 WORKDIR /decentralml/substrate-node-decentralml
+RUN git checkout federated_learning
 RUN cargo build --package node-decentralml --release
 
 FROM --platform=$BUILDPLATFORM ubuntu:22.04

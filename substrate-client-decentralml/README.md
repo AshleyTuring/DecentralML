@@ -26,6 +26,8 @@ To use the client, the best method is to use the docker container following the 
 
 ### Installation and local testing
 
+> **NOTE** The docker containers are the advised method of testing. If you decide to test locally on your own machine, please be advised that some errors might occur and that some adjustments might be needed to the following commands, according to your system.
+
 Python (version >= 3.10), pip and poetry packages are required to run the script.
 
 - Install python https://www.datacamp.com/blog/how-to-install-python
@@ -45,6 +47,16 @@ Then, after cloning the repository, switch to the decentraml/substrate-client-de
 cd DecentralML/substrate-client-decentralml/
 ```
 
+Create a python environment:
+```bash
+python -m venv .venv
+```
+
+Activate the environment:
+```bash
+source .venv/bin/activate
+```
+
 Then install the client with:
 
 ```bash
@@ -55,6 +67,12 @@ After this, making sure that a node is running, either with a docker or locally 
 
 ```bash
 python -m decentralml.examples
+```
+
+Or you can launch the main menu for each role:
+
+```bash
+python -m decentralml.main
 ```
 
 > **NOTE** If you run the client locally (NOT in the docker), make sure that you place your shell in the root directory of the project. This is required for the assets folder to be found at `substrate-client-decentralml/assets`

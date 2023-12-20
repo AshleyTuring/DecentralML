@@ -1,21 +1,21 @@
 version: '3.7'
 
 services:  
-  model_contributor:
+  model_creator:
     image: decentralml_client:latest
-    container_name: model_contributor
-    hostname: model_contributor
+    container_name: model_creator
+    hostname: model_creator
     volumes:
       - $HOME/decentralml/assets/:/decentralml/assets
       - $HOME/decentralml/remote/:/decentralml/remote
     environment:
-      - SOCKET_URL=ws://node_decentral:9944
+      - SOCKET_URL=ws://127.0.0.1:9944
       - ASSETS_FOLDER=/decentralml/assets/
       - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
       - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
       - IPFS_END_POINT=https://ipfs.infura.io:5001
-      - DECENTRALML_ROLE=model_contributor
       - EMULATE_IPFS=True
+      - DECENTRALML_ROLE=model_creator
       - REMOTE_FOLDER=/decentralml/remote
     stdin_open: true 
     tty: true

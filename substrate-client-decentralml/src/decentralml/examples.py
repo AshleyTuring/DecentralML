@@ -36,10 +36,15 @@ def create_data_annotator_task():
 
     # Determine the account to use based on passphrase availability
     if passphrase:
-        create_task_data_annotator(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
+        task_id = create_task_data_annotator(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
     else:
         alice = Keypair.create_from_uri('//Alice')
-        create_task_data_annotator(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
+        task_id = create_task_data_annotator(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, annotation_type, annotation_media_samples, annotation_files, annotation_class_labels, annotation_class_coordinates, annotation_json, annotation_files_storage_type, annotation_files_storage_credentials)
+    
+    if task_id is None:
+        task_id = 1
+
+    return task_id
 
 
 
@@ -66,10 +71,15 @@ def create_model_engineer_task():
 
     # Determine the account to use based on passphrase availability
     if passphrase:
-        create_task_model_engineer(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
+        task_id = create_task_model_engineer(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
     else:
         alice = Keypair.create_from_uri('//Alice')
-        create_task_model_engineer(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
+        task_id = create_task_model_engineer(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_engineer_path, model_engineer_storage_type, model_engineer_storage_credentials)
+    
+    if task_id is None:
+        task_id = 1
+    
+    return task_id
 
 
 
@@ -96,10 +106,15 @@ def create_model_contributor_task():
 
     # Determine the account to use based on passphrase availability
     if passphrase:
-        create_task_model_contributor(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
+        task_id = create_task_model_contributor(expiration_block, substrate, None, passphrase, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
     else:
         alice = Keypair.create_from_uri('//Alice')
-        create_task_model_contributor(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
+        task_id = create_task_model_contributor(expiration_block, substrate, alice, None, task_type, question, pays_amount, max_assignments, validation_strategy, model_contributor_script_path, model_contributor_script_storage_type, model_contributor_script_storage_credentials)
+    
+    if task_id is None:
+        task_id = 1
+    
+    return task_id
 
 
 def create_all_tasks_ipfs():

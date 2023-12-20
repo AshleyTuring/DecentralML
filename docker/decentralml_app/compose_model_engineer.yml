@@ -1,17 +1,21 @@
 version: '3.7'
 
 services:  
-  model_engineer_decentral:
+  model_engineer:
     image: decentralml_client:latest
-    container_name: model_engineer_decentral
+    container_name: model_engineer
+    hostname: model_engineer
     volumes:
-      - $HOME/DecentralML/assets/:/decentralml/assets
+      - $HOME/decentralml/assets/:/decentralml/assets
+      - $HOME/decentralml/remote/:/decentralml/remote
     environment:
       - SOCKET_URL=ws://127.0.0.1:9944
       - ASSETS_FOLDER=/decentralml/assets/
       - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
       - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
       - IPFS_END_POINT=https://ipfs.infura.io:5001
+      - DECENTRALML_ROLE=model_engineer
       - EMULATE_IPFS=True
+      - REMOTE_FOLDER=/decentralml/remote
     stdin_open: true 
     tty: true
