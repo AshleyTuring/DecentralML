@@ -26,25 +26,30 @@ If you are on a non Linux distribution, you can just use the commands in each fi
 
 ## Run node and client
 
-To run the node and client, use the provided `docker-compose.yml` file provided in this repo. To launch the node and client run, from a terminal pointed at the same location of the `docker-compose.yml` file:
+To run the node and client, use the provided `docker-compose.yml` file provided in this repo. To launch the node and all the clients, one for each role, from a terminal pointed at the same location of the `docker-compose.yml` file, execute the command:
 
 ```docker compose up```
 
 > **_NOTE:_**  Make sure you have a folder called `assets` within a folder called `DecentralML` in your home folder, as it is used by the client to upload files for the tasks.
 
-Now you can open a second terminal and attach a shell to the client container using the command:
+Now you can open a **second terminal** and attach a shell to the client container using the command:
 
-```docker attach client_decentralml```
+```docker attach model_creator```
 
-From this shell, you can use the python scripts in the folder `/decentralml/substrate-client-decentralml` to interact with the chain.
-
-## Example
-
-After you attached a new shell to the `client_decentral` container, you can test the connection and the creation of tasks with the following commands:
+You can attach a shell for any of the role, with **one** of the following commands:
 ```
-cd /decentralml/
-python3 -m substrate-client-decentralml.create_task_ipfs
+docker attach model_contributor
+docker attach model_engineer
+docker attach data_annotator
 ```
+
+From the attached shell, you can then run the decentralml client with:
+
+```bash
+python -m decentralml.main
+```
+
+The menu will present you the options for the corresponding role.
 
 ## File description
 
@@ -59,6 +64,11 @@ The `docker` folder contains the following file:
 │   ├── Dockerfile
 │   └── launch_client.sh
 ├── decentralml_app
+│   ├── compose_data_annotator.yml
+│   ├── compose_model_contributor.yml
+│   ├── compose_model_creator.yml
+│   ├── compose_model_engineer.yml
+│   ├── compose_node_decentralml.yml
 │   └── docker-compose.yml
 └── node_container
     ├── Dockerfile
@@ -70,7 +80,13 @@ In which:
 - `build_node.sh` and `build_client.sh` are Unix scripts to build the docker image for the node and client respectively.
 - `client_container` is a folder containing the description of the client image in `Dockerfile` and the command to be launch in the container created from this image `launch_client.sh`
 - `node_container` is a folder containing the description of the node image in `Dockerfile` and the command to be launch in the container created from this image `launch_client.sh`
-- `docker-compose.yml` in `decentralml_app` is a file that describes how the microservice infrastructure is built at runtime.
+- `docker-compose.yml` in `decentralml_app` is a file that describes how the microservice infrastructure is built at runtime. Running the entire application with the method described at the beginning of this documentation, is the advised method.
+
+    Additional docker compose files are provided to run each component singularly. If you only want to run a component, you can use the command:
+    ```bash
+    docker compose -f xxxxx up
+    ```
+    where `xxxxx` is the name of the file for that component (i.e. `compose_node_decentralml.yml`, `compose_model_creator.yml`).
 
 
 
