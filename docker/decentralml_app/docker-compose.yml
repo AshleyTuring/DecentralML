@@ -1,17 +1,39 @@
 version: '3.7'
 
 services:
-  node_decentral:
+  node_decentralml:
     image: decentralml_node:latest
     container_name: node_decentralml
+    hostname: node_decentralml
     ports:
       - 9944:9944
       - 9615:9615
     stdin_open: true 
     tty: true
-  client_decentral:
+  model_creator:
     image: decentralml_client:latest
-    container_name: client_decentralml
+    container_name: model_creator
+    hostname: model_creator
+    volumes:
+      - $HOME/decentralml/assets/:/decentralml/assets
+      - $HOME/decentralml/remote/:/decentralml/remote
+    environment:
+      - SOCKET_URL=ws://node_decentralml:9944
+      - ASSETS_FOLDER=/decentralml/assets/
+      - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
+      - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
+      - IPFS_END_POINT=https://ipfs.infura.io:5001
+      - DECENTRALML_ROLE=model_creator
+      - EMULATE_IPFS=True
+      - REMOTE_FOLDER=/decentralml/remote
+    links:
+      - "node_decentralml:node"
+    stdin_open: true 
+    tty: true
+  data_annotator:
+    image: decentralml_client:latest
+    container_name: data_annotator
+    hostname: data_annotator
     volumes:
       - $HOME/decentralml/assets/:/decentralml/assets
       - $HOME/decentralml/remote/:/decentralml/remote
@@ -21,10 +43,44 @@ services:
       - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
       - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
       - IPFS_END_POINT=https://ipfs.infura.io:5001
-      - DECENTRALML_ROLE=model_creator
+      - EMULATE_IPFS=True
+      - DECENTRALML_ROLE=data_annotator
+      - REMOTE_FOLDER=/decentralml/remote
+    stdin_open: true 
+    tty: true
+  model_contributor:
+    image: decentralml_client:latest
+    container_name: model_contributor
+    hostname: model_contributor
+    volumes:
+      - $HOME/decentralml/assets/:/decentralml/assets
+      - $HOME/decentralml/remote/:/decentralml/remote
+    environment:
+      - SOCKET_URL=ws://node_decentral:9944
+      - ASSETS_FOLDER=/decentralml/assets/
+      - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
+      - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
+      - IPFS_END_POINT=https://ipfs.infura.io:5001
+      - DECENTRALML_ROLE=model_contributor
       - EMULATE_IPFS=True
       - REMOTE_FOLDER=/decentralml/remote
-    links:
-      - "node_decentral:node"
+    stdin_open: true 
+    tty: true
+  model_engineer:
+    image: decentralml_client:latest
+    container_name: model_engineer
+    hostname: model_engineer
+    volumes:
+      - $HOME/decentralml/assets/:/decentralml/assets
+      - $HOME/decentralml/remote/:/decentralml/remote
+    environment:
+      - SOCKET_URL=ws://node_decentral:9944
+      - ASSETS_FOLDER=/decentralml/assets/
+      - IPFS_API_KEY=2YBXx5wpHlPPOrL91T8VwedHdz7
+      - IPFS_API_SECRET=497193a34170a89435eb4d9582dab729
+      - IPFS_END_POINT=https://ipfs.infura.io:5001
+      - DECENTRALML_ROLE=model_engineer
+      - EMULATE_IPFS=True
+      - REMOTE_FOLDER=/decentralml/remote
     stdin_open: true 
     tty: true

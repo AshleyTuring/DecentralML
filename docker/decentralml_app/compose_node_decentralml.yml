@@ -1,0 +1,10 @@
+services:
+  node_decentralml:
+    image: decentralml_node:latest
+    container_name: node_decentralml
+    hostname: node_decentralml
+    ports:
+      - 9944:9944
+      - 9615:9615
+    stdin_open: true 
+    tty: true

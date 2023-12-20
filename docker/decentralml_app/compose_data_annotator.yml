@@ -1,9 +1,10 @@
 version: '3.7'
 
 services:  
-  data_annotator_decentral:
+  data_annotator:
     image: decentralml_client:latest
-    container_name: data_annotator_decentral
+    container_name: data_annotator
+    hostname: data_annotator
     volumes:
       - $HOME/decentralml/assets/:/decentralml/assets
       - $HOME/decentralml/remote/:/decentralml/remote
