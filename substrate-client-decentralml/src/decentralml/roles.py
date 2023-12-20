@@ -5,30 +5,30 @@ from .assign_task import assign_task
 from .send_task_result import send_task_result
 from .storage_ipfs import get_result_path
 
-from .settings import SOCKET_URL
-from .storage import upload_data_to_remote, download_data_from_remote
+from .settings import SOCKET_URL, ASSETS_FOLDER
+from .storage import upload_data_to_remote, download_data_from_remote, upload_results_to_remote
 
 class ModelCreator:
     def __init__(self) -> None:
         self
 
-    @staticmethod
-    def create_task_data_ann():
+    @classmethod
+    def create_task_data_ann(cls):
         task_id = create_data_annotator_task()
         upload_data_to_remote("data_annotator", task_id)
     
-    @staticmethod
-    def create_task_model_contr():
+    @classmethod
+    def create_task_model_contr(cls):
         task_id = create_model_contributor_task()
         upload_data_to_remote("model_contributor", task_id)
 
-    @staticmethod
-    def create_task_model_eng():
+    @classmethod
+    def create_task_model_eng(cls):
         task_id = create_model_engineer_task()
         upload_data_to_remote("model_engineer", task_id)
 
-    @staticmethod
-    def menu():
+    @classmethod
+    def menu(cls):
         choice = -1
         while choice != 5:
             print("Choose your command")
@@ -73,12 +73,15 @@ class ModelCreator:
                 print("Choice must be one value in the interval [1-5]")
                 choice = -1
 
-    def validate_task_results():
+    @classmethod
+    def validate_task_results(cls):
         pass
-
-    def accept_task_results():
+    
+    @classmethod
+    def accept_task_results(cls):
         pass
-
+    
+    @classmethod
     def reject_task_results():
         pass
 
@@ -104,11 +107,12 @@ class Contributor():
     
     @classmethod
     def run_task(cls, task_id=1):
-        pass
+        print(f"To execute the task, use the script in: {ASSETS_FOLDER}/{task_id}/{cls.role}")
+        print("Once you are done, use the 'Send task results' option in this application")
 
     @classmethod
     def send_task_results(cls, task_id=1):
-        upload_data_to_remote(cls.role, task_id)
+        upload_results_to_remote(cls.role, task_id)
 
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Assuming no passphrase is provided
