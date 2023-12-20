@@ -6,7 +6,7 @@ from .send_task_result import send_task_result
 from .storage_ipfs import get_result_path
 
 from .settings import SOCKET_URL
-from .storage import upload_data
+from .storage import upload_data_to_remote, download_data_from_remote
 
 class ModelCreator:
     def __init__(self) -> None:
@@ -15,17 +15,17 @@ class ModelCreator:
     @staticmethod
     def create_task_data_ann():
         task_id = create_data_annotator_task()
-        upload_data("data_annotators", task_id)
+        upload_data_to_remote("data_annotator", task_id)
     
     @staticmethod
     def create_task_model_contr():
         task_id = create_model_contributor_task()
-        upload_data("model_contributor", task_id)
+        upload_data_to_remote("model_contributor", task_id)
 
     @staticmethod
     def create_task_model_eng():
         task_id = create_model_engineer_task()
-        upload_data("model_engineer", task_id)
+        upload_data_to_remote("model_engineer", task_id)
 
     @staticmethod
     def menu():
@@ -84,11 +84,15 @@ class ModelCreator:
 
 
 class Contributor():
+    role = "contributor"
+
     def __init__(self) -> None:
         pass
     
     @staticmethod
-    def assign_task(task_id=1):
+    def assign_task(self, task_id=1):
+        download_data_from_remote(self.role, task_id)
+
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Replace with actual passphrase or keep as None to use sudoaccount
 
@@ -104,7 +108,9 @@ class Contributor():
         pass
 
     @staticmethod
-    def send_task_results(task_id=1):
+    def send_task_results(self, task_id=1):
+        upload_data_to_remote(self.role, task_id)
+
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Assuming no passphrase is provided
 
@@ -134,7 +140,7 @@ class Contributor():
             print(f"\t4\t-\tSend tasks results")
             print(f"\t5\t-\tExit")
             try:
-                choice = int(input(choice))
+                choice = int(input())
                 match choice:
                     case 1:
                         pass
@@ -152,15 +158,21 @@ class Contributor():
 
 
 class ModelContributor(Contributor):
+    role = "model_contributor"
+
     def __init__(self) -> None:
         super.__init__()
 
 
 class DataAnnotator(Contributor):
+    role = "data_annotator"
+
     def __init__(self) -> None:
         super.__init__()
 
 class ModelEngineer(Contributor):
+    role = "model_engineer"
+
     def __init__(self) -> None:
         super.__init__()
     
