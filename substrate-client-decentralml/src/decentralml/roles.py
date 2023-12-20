@@ -91,7 +91,7 @@ class Contributor():
     
     @staticmethod
     def assign_task(self, task_id=1):
-        download_data_from_remote(self.role, task_id)
+        download_data_from_remote(Contributor.role, task_id)
 
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Replace with actual passphrase or keep as None to use sudoaccount
