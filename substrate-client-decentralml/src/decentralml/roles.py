@@ -84,14 +84,13 @@ class ModelCreator:
 
 
 class Contributor():
-    role = "contributor"
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, role) -> None:
+        self.role = role
     
-    @staticmethod
-    def assign_task(self, task_id=1):
-        download_data_from_remote(Contributor.role, task_id)
+    @classmethod
+    def assign_task(cls, task_id=1):
+        download_data_from_remote(cls.role, task_id)
 
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Replace with actual passphrase or keep as None to use sudoaccount
@@ -103,13 +102,13 @@ class Contributor():
             alice = Keypair.create_from_uri('//Alice')
             assign_task(substrate, alice, None, task_id)
     
-    @staticmethod
-    def run_task(task_id=1):
+    @classmethod
+    def run_task(cls, task_id=1):
         pass
 
-    @staticmethod
-    def send_task_results(self, task_id=1):
-        upload_data_to_remote(self.role, task_id)
+    @classmethod
+    def send_task_results(cls, task_id=1):
+        upload_data_to_remote(cls.role, task_id)
 
         substrate = SubstrateInterface(url=SOCKET_URL)
         passphrase = None  # Assuming no passphrase is provided
@@ -129,8 +128,8 @@ class Contributor():
 
         send_task_result(substrate, keypair, submission_id, result, result_path, result_storage_type, result_storage_credentials)
 
-    @staticmethod
-    def menu():
+    @classmethod
+    def menu(cls):
         choice = -1
         while choice != 5:
             print("Choose your command")
@@ -145,12 +144,12 @@ class Contributor():
                     case 1:
                         pass
                     case 2:
-                        task_id = int(input("Input id of task to accept"))
-                        Contributor.assign_task(task_id)
+                        task_id = int(input("Input id of task to accept\n"))
+                        cls.assign_task(task_id)
                     case 3:
-                        Contributor.run_task()
+                        cls.run_task()
                     case 4:
-                        Contributor.send_task_results()
+                        cls.send_task_results()
                     
             except ValueError as e:
                 print("Choice must be one value in the interval [1-5]")
