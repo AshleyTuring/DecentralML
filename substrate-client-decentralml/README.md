@@ -35,12 +35,6 @@ Python (version >= 3.10), pip and poetry packages are required to run the script
 - Install pip https://pip.pypa.io/en/stable/installation/
 
 
-After that, install poetry with:
-
-```bash
-pip install poetry
-```
-
 Then, after cloning the repository, switch to the decentraml/substrate-client-decentralml directory.
 
 ```bash
@@ -56,6 +50,14 @@ Activate the environment:
 ```bash
 source .venv/bin/activate
 ```
+
+After that, install poetry with:
+
+```bash
+pip install poetry
+```
+
+`Poetry` is a python packaging and dependencies management system that facilitate the installation of python code as packages. More info can be found at https://python-poetry.org/docs/.
 
 Then install the client with:
 
