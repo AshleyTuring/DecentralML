@@ -90,7 +90,24 @@ In which:
 - `node_container` is a folder containing the description of the node image in `Dockerfile` and the command to be launch in the container created from this image `launch_client.sh`
 - `docker-compose.yml` in `decentralml_app` is a file that describes how the microservice infrastructure is built at runtime. Running the entire application with the method described at the beginning of this documentation, is the advised method.
 
-    Additional docker compose files are provided to run each component singularly. If you only want to run a component, you can use the command:
+    In the docker-compose.yml file, five services are defined, one for the node and one for each role (i.e. `model_creator`, `model_engineer`, `model_contributor`, `data_annotator`). All the services shares the definition of the following parameters:
+        
+    - `image`: this define what image must be used to create the container for the service
+    - `container_name`: the name of the container that is created
+    - `hostname`: the hostname of the system inside the container. It helps identify the service from the terminal once connected.
+    - `links`: this assures that all the services are run under the same network.
+    - `stdin_true` and `tty`: this assures that a container keeps running with a attachable shell once launched. This makes possible for a terminal to be connected to a running container.
+
+    In addition, the node service defines:
+
+    - `ports`: this parameters link the ports in the container with post on the host system. In this way, it is possible to use the node running in the container even when the clients are running locally on the host.
+
+    For each of the roles containers, the following parameters are also defined:
+
+    - `volumes`: this defines the link between the folders inside the container, with folders on the host system.
+    - `environment`: in this section, all the environmental variable are defined. This is the best way to set parameters needed by the services at runtime. These variables can then be read by the python code (i.e. look at the file `substrate-client-decentralml/src/decentralml/settings.py` to see how the default variables are read.)
+
+    Finally, single docker compose files are provided to run each component singularly. If you only want to run a component, you can use the command:
     ```bash
     docker compose -f xxxxx up
     ```
