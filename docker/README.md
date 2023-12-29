@@ -32,8 +32,6 @@ Before running the docker containers, make sure that:
 - If you are simulating the remote storage, also create a folder and subfolder `decentralml/remote` in the same home folder.
 - If you want to test some examples, copy the content of the `asset` folder in the python client `substrate-client-decentralml` in the previously created folder `decentralml/assets`
 
-
-
 ## Run node and client
 
 To run the node and client, use the provided `docker-compose.yml` file provided in this repo. To launch the node and all the clients, one for each role, from a terminal pointed at the same location of the `docker-compose.yml` file, execute the command:

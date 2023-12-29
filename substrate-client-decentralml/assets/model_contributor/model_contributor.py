@@ -15,8 +15,8 @@ def load_data():
     x_train, x_test = x_train / 255.0, x_test / 255.0
     return (x_train, y_train), (x_test, y_test)
 
-def train_model(model, x_train, y_train):
-    model.fit(x_train, y_train, epochs=1, batch_size=32)
+def train_model(model, x_train, y_train, epoch=100, batch_size=32):
+    model.fit(x_train, y_train, epochs=epoch, batch_size=batch_size)
     return model
 
 def evaluate_model(model, x_test, y_test):

@@ -15,7 +15,6 @@ def cli():
     pass
 
 def create_model():
-    # Load model and data (MobileNetV2, CIFAR-10)
     model = tf.keras.models.Sequential([
                 tf.keras.layers.Flatten(input_shape=(28, 28)),
                 tf.keras.layers.Dense(128, activation='relu'),
@@ -57,27 +56,21 @@ def load_contributors_models(contributors_models_path):
         contributors_models.append(model)
     return contributors_models
 
-def old_federate_contributors_model(contributors_models, policy="average"):
-    contributors_weights = [model.get_weights() for model in contributors_models]
-    new_weights = list()
-    if policy=="average":
-        for weights_list_tuple in zip(*contributors_weights):
-            new_weights.append(
-                [np.array(weights_).mean(axis=0) for weights_ in zip(*weights_list_tuple)])
-    return new_weights
-
 def federate_contributors_model(contributors_models, policy="average"):
-    # Retrieve the trainable variables from each client model
     client_weights = [model.trainable_variables for model in contributors_models]
 
-    # Compute the average weights for each layer
-    avg_weights = [
-        tf.reduce_mean(layer_weight_tensors, axis=0)
-        for layer_weight_tensors in zip(*client_weights)
-    ]
+    new_weights = None
 
-    return avg_weights
-
+    if policy=="average":
+        # Compute the average weights for each layer
+        avg_weights = [
+            tf.reduce_mean(layer_weight_tensors, axis=0)
+            for layer_weight_tensors in zip(*client_weights)
+        ]
+        new_weights = avg_weights
+    
+    return new_weights
+    
 
 def set_model_weights(model, weights):
     model.set_weights(weights)
